@@ -13,10 +13,7 @@ spec:
         app: backend
     spec:
       containers:
-      - name: backend
-        image: dockerhub88/backend:latest
-        ports:
-        - containerPort: 5000
-        env:
-        - name: FLASK_ENV
-          value: "production"
+        - name: backend
+          image: dockerhub88/backend:latest
+          ports:
+            - containerPort: 5000
