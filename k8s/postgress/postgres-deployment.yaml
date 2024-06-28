@@ -31,6 +31,8 @@ spec:
             secretKeyRef:
               name: postgres-secret
               key: POSTGRES_PASSWORD
+        - name: POSTGRES_HOST
+          value: postgres  # This should match the PostgreSQL service name              
         ports:
         - containerPort: 5432
         volumeMounts:
@@ -40,14 +42,3 @@ spec:
       - name: postgres-storage
         persistentVolumeClaim:
           claimName: postgres-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres
-spec:
-  type: ClusterIP
-  ports:
-  - port: 5432
-  selector:
-    app: postgres

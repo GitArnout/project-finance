@@ -130,3 +130,4 @@ fi
 # Summary
 echo "Deployment completed successfully."
 echo "$passed_steps out of $total_steps steps passed successfully."
+watch -n 1 kubectl get pods

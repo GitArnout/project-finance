@@ -15,6 +15,6 @@ def create_app():
     app.register_blueprint(main)
     
     # Initialize database tables
-    #create_table_if_not_exists()
+    create_table_if_not_exists()
 
     return app
