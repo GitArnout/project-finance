@@ -9,3 +9,4 @@ matplotlib==3.5.1
 python-dotenv==1.0.1
 sqlalchemy==2.0.15
 kubernetes==30.1.0
+numpy==1.23.0

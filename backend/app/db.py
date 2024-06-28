@@ -1,7 +1,12 @@
 import os
+import csv
+import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Database connection function using SQLAlchemy
 def get_db_connection():
@@ -112,3 +117,43 @@ def create_table_if_not_exists():
             print("Table 'transaction_labels' already exists.")
 
     db_session.remove()
+
+def load_csv_data():
+    engine, db_session = get_db_connection()
+
+    try:
+        with engine.connect() as conn:
+            conn.begin()  # Begin a transaction
+
+            with open('data.csv', 'r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    bedrag_eur = row['Bedrag (EUR)'].replace(',', '.')  # Replace comma with period
+                    query = """
+                        INSERT INTO transactions (datum, company, rekening, tegenrekening, code, af_bij, bedrag_eur, mutatiesoort, mededelingen)
+                        VALUES (:datum, :company, :rekening, :tegenrekening, :code, :af_bij, :bedrag_eur, :mutatiesoort, :mededelingen)
+                    """
+                    logger.info("row")
+                    logger.info(row)
+
+                    conn.execute(text(query), {
+                        'datum': row['Datum'],
+                        'company': row['Company'],
+                        'rekening': row['Rekening'],
+                        'tegenrekening': row['Tegenrekening'],
+                        'code': row['Code'],
+                        'af_bij': row['Af Bij'],
+                        'bedrag_eur': bedrag_eur,
+                        'mutatiesoort': row['Mutatiesoort'],
+                        'mededelingen': row['Mededelingen']
+                    })
+
+            conn.commit()  # Commit the transaction
+            logger.info("Data loaded successfully.")
+
+    except Exception as e:
+        conn.rollback()  # Rollback the transaction if an exception occurs
+        logger.error(f"Error loading data: {e}")
+
+    finally:
+        db_session.close()  # Close the session
