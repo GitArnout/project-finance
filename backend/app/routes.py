@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 from dotenv import load_dotenv
 from .models import fetch_chart_data, fetch_transactions
 from .db import load_csv_data
+from logging_config import logger
 
 main = Blueprint('main', __name__)
 
@@ -64,6 +65,7 @@ def get_transactions():
 
         return jsonify(transaction_list)
     except Exception as e:
+        logger.error(f"Error in API endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
 @main.route('/api/data', methods=['GET'])
@@ -91,6 +93,7 @@ def get_chart_data():
             'bij_data': bij_data
         })
     except Exception as e:
+        logger.error(f"Error in API endpoint: {e}")        
         return jsonify({'error': str(e)}), 500
     
 @main.route('/api/load-data', methods=['GET'])
