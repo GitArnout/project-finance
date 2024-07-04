@@ -8,26 +8,23 @@ if [ ! -f $LOG_FILE ]; then
   touch $LOG_FILE
 fi
 
-# Get all namespaces, excluding system namespaces like kube-system, etc.
-namespaces=$(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep -vE '^(kube-system|kube-public|kube-node-lease)$')
+# Empty the file.
+> $LOG_FILE
 
-# Loop through all namespaces
-for ns in $namespaces; do
-  # Get all pods in the current namespace
-  pods=$(kubectl get pods -n $ns -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n')
+# Get all pods in the default namespace
+pods=$(kubectl get pods -n default -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n')
 
-  # Loop through all pods in the current namespace
-  for pod in $pods; do
-    echo "Logging from pod $pod in namespace $ns" >> $LOG_FILE
-    # Append the logs of the current pod to the log file
-    kubectl logs -n $ns $pod >> $LOG_FILE 2>&1
+# Loop through all pods in the default namespace
+for pod in $pods; do
+  echo "Logging from pod $pod in namespace default" >> $LOG_FILE
+  # Append the logs of the current pod to the log file
+  kubectl logs -n default $pod >> $LOG_FILE 2>&1
 
-    # Check if the pod has multiple containers and get logs for each
-    containers=$(kubectl get pod -n $ns $pod -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n')
-    for container in $containers; do
-      echo "Logging from container $container in pod $pod in namespace $ns" >> $LOG_FILE
-      kubectl logs -n $ns $pod -c $container >> $LOG_FILE 2>&1
-    done
+  # Check if the pod has multiple containers and get logs for each
+  containers=$(kubectl get pod -n default $pod -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n')
+  for container in $containers; do
+    echo "Logging from container $container in pod $pod in namespace default" >> $LOG_FILE
+    kubectl logs -n default $pod -c $container >> $LOG_FILE 2>&1
   done
 done
 

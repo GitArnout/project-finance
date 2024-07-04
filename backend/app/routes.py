@@ -1,24 +1,45 @@
 import os
 import pandas as pd
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
-from .models import fetch_chart_data, fetch_transactions
-from .db import load_csv_data
-from logging_config import logger
+from .db import fetch_transactions, fetch_chart_data, load_csv_data
 
-main = Blueprint('main', __name__)
+bp = Blueprint('main', __name__)
 
-#Session = sessionmaker(bind=engine)
+@bp.route('/api/transactions', methods=['GET'])
+def get_transactions():
+    month = request.args.get('month')
+    if not month:
+        return jsonify({'error': 'Month parameter is missing'}), 400
 
-@main.route('/api/health', methods=['GET'])
+    try:
+        month_start = pd.to_datetime(month, format='%B %Y').strftime('%Y-%m-01')
+        transactions = fetch_transactions(month_start)
+
+        if not transactions:
+            return jsonify([])  # Return an empty list if no transactions found
+
+        transaction_list = [
+            {
+                'date': transaction.datum.strftime('%Y-%m-%d'),
+                'company': transaction.company,
+                'amount': float(transaction.bedrag_eur)  # Convert decimal to float
+            } for transaction in transactions
+        ]
+
+        return jsonify(transaction_list)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy"}), 200
 
-@main.route('/api/hello', methods=['GET'])
+@bp.route('/api/hello', methods=['GET'])
 def example_route():
     return jsonify({"message": "Hello, World!"}), 200
 
-@main.route('/api/dbinfo', methods=['GET'])
+@bp.route('/api/dbinfo', methods=['GET'])
 def db_info():
     
     load_dotenv()
@@ -42,33 +63,7 @@ def db_info():
         "port": port
     }), 200
 
-@main.route('/api/transactions', methods=['GET'])
-def get_transactions():
-    month = request.args.get('month')
-    if not month:
-        return jsonify({'error': 'Month parameter is missing'}), 400
-
-    try:
-        month_start = pd.to_datetime(month, format='%B %Y').strftime('%Y-%m-01')
-        transactions = fetch_transactions(month_start)
-
-        if not transactions:
-            return jsonify([])  # Return an empty list if no transactions found
-
-        transaction_list = [
-            {
-                'date': transaction[0].strftime('%Y-%m-%d'),
-                'company': transaction[1],
-                'amount': float(transaction[2])  # Convert decimal to float
-            } for transaction in transactions
-        ]
-
-        return jsonify(transaction_list)
-    except Exception as e:
-        logger.error(f"Error in API endpoint: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@main.route('/api/data', methods=['GET'])
+@bp.route('/api/data', methods=['GET'])
 def get_chart_data():
     try:
         df = fetch_chart_data()
@@ -93,13 +88,16 @@ def get_chart_data():
             'bij_data': bij_data
         })
     except Exception as e:
-        logger.error(f"Error in API endpoint: {e}")        
         return jsonify({'error': str(e)}), 500
-    
-@main.route('/api/load-data', methods=['GET'])
+
+@bp.route('/api/load-data', methods=['GET'])
 def load_data():
+
     try:
-        load_csv_data()
-        return "Data loaded successfully", 200
+        result = load_csv_data()
+        return jsonify({
+            "message": "Data loaded successfully",
+            "details": result
+        }), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 500    
+        return jsonify({'error': str(e)}), 500

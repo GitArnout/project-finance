@@ -1,0 +1,17 @@
+# Use a base image with Python and PostgreSQL client tools
+FROM python:3.9-slim
+
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Copy the initialization script into the container
+COPY backend/app/db_init.py /app/db_init.py
+
+# Set the working directory
+WORKDIR /app
+
+# Install required Python packages
+RUN pip install sqlalchemy psycopg2-binary python-dotenv
+
+# Run the initialization script
+CMD ["python", "db_init.py"]

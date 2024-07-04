@@ -1,44 +1,35 @@
-import pandas as pd
-from logging_config import logger
-from sqlalchemy import text
-from .db import get_db_connection
+from sqlalchemy import Column, Integer, String, Date, DECIMAL, ForeignKey, Text, create_engine
+from sqlalchemy.orm import relationship, declarative_base
 
+Base = declarative_base()
 
-def fetch_transactions(month_start):
-    engine, db_session = get_db_connection()
-    with engine.connect() as conn:
-        query = """
-            SELECT datum, company, bedrag_eur 
-            FROM transactions 
-            WHERE DATE_TRUNC('month', datum) = :month_start
-        """
-        result = conn.execute(text(query), {'month_start': month_start})
-        transactions = result.fetchall()
-    db_session.remove()
-    return transactions
+class Transaction(Base):
+    __tablename__ = 'transactions'
+    id = Column(Integer, primary_key=True)
+    datum = Column(Date)
+    company = Column(String(255))
+    rekening = Column(String(255))
+    tegenrekening = Column(String(255))
+    code = Column(String(50))
+    af_bij = Column(String(50))
+    bedrag_eur = Column(DECIMAL)
+    mutatiesoort = Column(String(255))
+    mededelingen = Column(Text)
 
-def fetch_chart_data():
-    engine, db_session = get_db_connection()
-    query = """
-        SELECT DATE_TRUNC('month', datum) as month, af_bij, SUM(bedrag_eur) as total
-        FROM transactions
-        GROUP BY month, af_bij
-        ORDER BY month
-    """
-    
-    try:
-        with engine.connect() as conn:
-            result = conn.execute(text(query)).mappings().all()
-            data = {'month': [], 'af_bij': [], 'total': []}
-            for row in result:
-                data['month'].append(row['month'])
-                data['af_bij'].append(row['af_bij'])
-                data['total'].append(row['total'])
-            df = pd.DataFrame(data)
-            logger.info("Data fetched successfully.")
-            return df
-    except Exception as e:
-        logger.error(f"Error fetching data: {e}")
-        raise
-    finally:
-        db_session.close()
+class TransactionLabel(Base):
+    __tablename__ = 'transaction_labels'
+    transaction_id = Column(Integer, ForeignKey('transactions.id'), primary_key=True)
+    label_id = Column(Integer, ForeignKey('labels.id'), primary_key=True)
+
+class Label(Base):
+    __tablename__ = 'labels'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), unique=True, nullable=False)
+    category_id = Column(Integer, ForeignKey('categories.id'))
+
+class Category(Base):
+    __tablename__ = 'categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), unique=True, nullable=False)
+    parent_id = Column(Integer, ForeignKey('categories.id'))
+    parent = relationship("Category", remote_side=[id], backref='children')
