@@ -2,8 +2,9 @@ import pandas as pd
 import csv
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from .models import Transaction
+from .models import Transaction, Label
 from flask import current_app
+from sqlalchemy.dialects.postgresql import insert
 
 def get_session():
     engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'])
@@ -111,3 +112,86 @@ def load_csv_data():
         "new_lines": new_lines,
         "existing_lines": existing_lines
     }
+
+def create_tables():
+    session = get_session()
+    try:
+        # Check if categories and labels already exist
+        existing_labels = session.query(Label).all()
+        if not existing_labels:
+            # Define the labels to be inserted
+            labels_data = [
+                {'name': 'INKOMSTEN', 'parent_id': None},
+                {'name': 'Salaris', 'parent_id': 'INKOMSTEN'},
+                {'name': 'UITGAVEN', 'parent_id': None},
+                {'name': 'VASTE LASTEN', 'parent_id': 'UITGAVEN'},
+                {'name': 'Huis', 'parent_id': 'VASTE LASTEN'},
+                {'name': 'Huur', 'parent_id': 'Huis'},
+                {'name': 'Gas + Stroom', 'parent_id': 'Huis'},
+                {'name': 'Lokale lasten', 'parent_id': 'VASTE LASTEN'},
+                {'name': 'Hoogheemraadschap', 'parent_id': 'Lokale lasten'},
+                {'name': 'Verzekeringen', 'parent_id': 'VASTE LASTEN'},
+                {'name': 'Zorgverzekering', 'parent_id': 'Verzekeringen'},
+                {'name': 'Inboedel', 'parent_id': 'Verzekeringen'},
+                {'name': 'HUISHOUDELIJKE UITGAVEN', 'parent_id': 'UITGAVEN'},
+                {'name': 'Zakgeld', 'parent_id': 'HUISHOUDELIJKE UITGAVEN'},
+                {'name': 'Boodschappen', 'parent_id': 'HUISHOUDELIJKE UITGAVEN'},
+                {'name': 'Kinderen', 'parent_id': 'HUISHOUDELIJKE UITGAVEN'},
+                {'name': 'Auto', 'parent_id': 'HUISHOUDELIJKE UITGAVEN'},
+                {'name': 'Overige', 'parent_id': 'HUISHOUDELIJKE UITGAVEN'},
+                {'name': 'RESERVERINGSUITGAVEN', 'parent_id': 'UITGAVEN'},
+                {'name': 'Bruiloft', 'parent_id': 'RESERVERINGSUITGAVEN'},
+                {'name': 'Auto', 'parent_id': 'RESERVERINGSUITGAVEN'}
+            ]
+
+            # Create a dictionary to map label names to their IDs
+            label_id_map = {}
+
+            # Insert labels into the database
+            for label_data in labels_data:
+                name = label_data['name']
+                parent_name = label_data['parent_id']
+
+                # Resolve parent_id from name if it exists
+                parent_id = label_id_map.get(parent_name)
+
+                insert_stmt = insert(Label).values(name=name, parent_id=parent_id).on_conflict_do_nothing(index_elements=['name'])
+                session.execute(insert_stmt)
+                session.flush()
+
+                # Update the label_id_map with the newly inserted label
+                label = session.query(Label).filter_by(name=name).one()
+                label_id_map[name] = label.id
+
+            session.commit()
+            print("Tables and initial data created successfully.")
+        else:
+            print("Labels already exist.")
+    except Exception as e:
+        session.rollback()
+        print(f"An error occurred: {e}")
+    finally:
+        session.close()
+
+# Function to fetch ordered data and return as DataFrame
+def get_ordered_labels_as_dataframe():
+    session = get_session()
+    try:
+        # Query labels
+        labels_query = session.query(Label).all()
+
+        # Extract data into lists
+        ids = [label.id for label in labels_query]
+        names = [label.name for label in labels_query]
+        parent_ids = [label.parent_id for label in labels_query]
+
+        # Create DataFrame
+        labels_df = pd.DataFrame({
+            'id': ids,
+            'name': names,
+            'parent_id': parent_ids
+        })
+
+        return labels_df
+    finally:
+        session.close()

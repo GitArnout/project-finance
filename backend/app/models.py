@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, DECIMAL, ForeignKey, Text, create_engine
 from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, sessionmaker, backref
 
 Base = declarative_base()
 
@@ -16,20 +17,17 @@ class Transaction(Base):
     mutatiesoort = Column(String(255))
     mededelingen = Column(Text)
 
-class TransactionLabel(Base):
-    __tablename__ = 'transaction_labels'
-    transaction_id = Column(Integer, ForeignKey('transactions.id'), primary_key=True)
-    label_id = Column(Integer, ForeignKey('labels.id'), primary_key=True)
-
 class Label(Base):
     __tablename__ = 'labels'
     id = Column(Integer, primary_key=True)
     name = Column(String(255), unique=True, nullable=False)
-    category_id = Column(Integer, ForeignKey('categories.id'))
+    parent_id = Column(Integer, ForeignKey('labels.id'), nullable=True)
+    parent = relationship('Label', remote_side=[id], backref=backref('children', cascade="all, delete-orphan"))
 
-class Category(Base):
-    __tablename__ = 'categories'
+class TransactionLabel(Base):
+    __tablename__ = 'transaction_labels'
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True, nullable=False)
-    parent_id = Column(Integer, ForeignKey('categories.id'))
-    parent = relationship("Category", remote_side=[id], backref='children')
+    transaction_id = Column(Integer, ForeignKey('transactions.id'))
+    label_id = Column(Integer, ForeignKey('labels.id'))
+    transaction = relationship('Transaction', backref=backref('transaction_labels', cascade="all, delete-orphan"))
+    label = relationship('Label', backref=backref('transaction_labels', cascade="all, delete-orphan"))

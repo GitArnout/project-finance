@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from .config import Config
 from .models import Base
 from .routes import bp
+from .db import create_tables
 
 def create_app():
     app = Flask(__name__)
@@ -19,8 +20,10 @@ def create_app():
 
         # Create database tables if they do not exist
         Base.metadata.create_all(engine)
-
+        
+        # Call create_tables to initialize categories and labels
+        create_tables()        
+        
     # Store the session factory on the app
     app.session_factory = Session
-
     return app
