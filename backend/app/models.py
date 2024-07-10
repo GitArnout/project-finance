@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, DECIMAL, ForeignKey, Text, create_engine
-from sqlalchemy.orm import relationship, declarative_base
-from sqlalchemy.orm import relationship, sessionmaker, backref
+from sqlalchemy.orm import relationship, declarative_base, sessionmaker, backref
 
 Base = declarative_base()
 
@@ -17,12 +16,19 @@ class Transaction(Base):
     mutatiesoort = Column(String(255))
     mededelingen = Column(Text)
 
+class LabelCategory(Base):
+    __tablename__ = 'label_categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), unique=True, nullable=False)
+    parent_id = Column(Integer, ForeignKey('label_categories.id'), nullable=True)
+    parent = relationship('LabelCategory', remote_side=[id], backref=backref('children', cascade="all, delete-orphan"))
+
 class Label(Base):
     __tablename__ = 'labels'
     id = Column(Integer, primary_key=True)
     name = Column(String(255), unique=True, nullable=False)
-    parent_id = Column(Integer, ForeignKey('labels.id'), nullable=True)
-    parent = relationship('Label', remote_side=[id], backref=backref('children', cascade="all, delete-orphan"))
+    category_id = Column(Integer, ForeignKey('label_categories.id'))
+    category = relationship('LabelCategory', backref=backref('labels', cascade="all, delete-orphan"))
 
 class TransactionLabel(Base):
     __tablename__ = 'transaction_labels'
