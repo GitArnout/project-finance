@@ -6,6 +6,7 @@ from .models import Transaction, Label, TransactionLabel, LabelCategory
 from flask import current_app
 from sqlalchemy.dialects.postgresql import insert
 import logging
+from datetime import date
 
 def get_session():
     try:
@@ -67,23 +68,29 @@ def update_transaction_label(transaction_id, label_name):
 def fetch_transactions(month_start=None):
     session = get_session()
     try:
+        query = session.query(
+            Transaction.id,
+            Transaction.datum,
+            Transaction.company,
+            Transaction.bedrag_eur,
+            Label.name.label('label')
+        ).outerjoin(TransactionLabel, Transaction.id == TransactionLabel.transaction_id) \
+         .outerjoin(Label, TransactionLabel.label_id == Label.id)
+
         if month_start:
             month_start_date = pd.to_datetime(month_start).date()
-            transactions = session.query(Transaction).filter(
-                func.date_trunc('month', Transaction.datum) == month_start_date
-            ).all()
-        else:
-            transactions = session.query(Transaction).all()
+            query = query.filter(func.date_trunc('month', Transaction.datum) == month_start_date)
+
+        transactions = query.all()
 
         transaction_data = []
         for transaction in transactions:
-            labels = [tl.label.name for tl in transaction.transaction_labels]
             transaction_data.append({
                 'id': transaction.id,
                 'datum': transaction.datum,
                 'company': transaction.company,
                 'bedrag_eur': transaction.bedrag_eur,
-                'label': labels[0] if labels else None
+                'label': transaction.label
             })
 
         return transaction_data
@@ -93,6 +100,7 @@ def fetch_transactions(month_start=None):
         raise e
     finally:
         session.close()
+
 
 def fetch_chart_data():
     session = get_session()
@@ -299,3 +307,85 @@ def get_ordered_labels_as_dataframe():
     finally:
         session.close()
 
+def fetch_transactions_by_label_and_month():
+    session = get_session()
+    try:
+        # Query to fetch transactions with their labels
+        logging.info("Fetching transactions from the database")
+        query = session.query(
+            Transaction.datum,
+            Transaction.bedrag_eur,
+            Label.name.label('label')
+        ).outerjoin(TransactionLabel, Transaction.id == TransactionLabel.transaction_id) \
+         .outerjoin(Label, TransactionLabel.label_id == Label.id)
+
+        transactions = query.all()
+        logging.info(f"Fetched {len(transactions)} transactions")
+
+        # Create a DataFrame from the transactions
+        data = {
+            'datum': [transaction.datum for transaction in transactions],
+            'bedrag_eur': [transaction.bedrag_eur for transaction in transactions],
+            'label': [transaction.label for transaction in transactions]
+        }
+        df = pd.DataFrame(data)
+        logging.info("Created DataFrame from transactions")
+
+        # Ensure 'datum' is parsed correctly
+        def parse_date(date_val):
+            try:
+                if isinstance(date_val, date):  # If date_val is already a datetime.date object
+                    return pd.to_datetime(date_val)
+                elif isinstance(date_val, str):
+                    if len(date_val) == 8:  # Format YYYYMMDD
+                        return pd.to_datetime(date_val, format='%Y%m%d')
+                    else:
+                        return pd.to_datetime(date_val)  # Default parser
+                else:
+                    return pd.NaT  # Return NaT (Not a Time) for invalid cases
+            except Exception as e:
+                logging.error(f"Error parsing date: {date_val} - {e}")
+                return pd.NaT
+
+        df['datum'] = df['datum'].apply(parse_date)
+        logging.info("Parsed 'datum' column to datetime")
+
+        # Drop rows with invalid dates
+        df = df.dropna(subset=['datum'])
+        logging.info(f"Filtered DataFrame to remove rows with invalid dates, resulting in {len(df)} records")
+
+        # Add 'month' and 'year' columns
+        df['month'] = df['datum'].dt.month_name()
+        df['year'] = df['datum'].dt.year
+        logging.info("Added 'month' and 'year' columns")
+
+        # Filter the DataFrame for the specific year (if required)
+        df = df[df['year'] == 2024]  # Assuming we are interested in the year 2024
+        logging.info(f"Filtered DataFrame for the year 2024, resulting in {len(df)} records")
+
+        # Group by 'label' and 'month', then sum 'bedrag_eur'
+        summary = df.groupby(['label', 'month'])['bedrag_eur'].sum().unstack(fill_value=0)
+        logging.info("Grouped and summed DataFrame by 'label' and 'month'")
+
+        # Ensure all months are present
+        all_months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December']
+        summary = summary.reindex(columns=all_months, fill_value=0)
+        logging.info("Reindexed summary to ensure all months are present")
+
+        # Reset index to make 'label' a column again
+        summary = summary.reset_index()
+        logging.info("Reset index to make 'label' a column")
+
+        result = summary.to_dict(orient='records')
+        logging.info(f"Final summary: {result}")
+
+        return result
+
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error fetching transactions by label and month: {e}")
+        raise e
+    finally:
+        session.close()
+        logging.info("Database session closed")

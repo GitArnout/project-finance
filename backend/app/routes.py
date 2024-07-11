@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
-from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label
+from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month
 import logging
 
 bp = Blueprint('main', __name__)
@@ -139,4 +139,15 @@ def update_label():
         update_transaction_label(transaction_id, label_name)
         return jsonify({'message': 'Label updated successfully'})
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@bp.route('/api/transactions/summary', methods=['GET'])
+def get_transaction_summary():
+    try:
+        logging.info("Received request to /api/transactions/summary")
+        summary = fetch_transactions_by_label_and_month()
+        logging.info("Returning transaction summary")
+        return jsonify(summary)
+    except Exception as e:
+        logging.error(f"Error in /api/transactions/summary: {e}")
         return jsonify({'error': str(e)}), 500
