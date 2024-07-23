@@ -1,120 +1,102 @@
-import React, { useEffect, useState, useRef } from 'react';
-import Chart from 'chart.js/auto';
+import React, { useEffect, useState } from 'react';
+import { BarChart } from '@mui/x-charts/BarChart';
+import {
+  Container,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+} from '@mui/material';
 import './App.css';
 
 const Home = () => {
   const [chartData, setChartData] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const chartInstanceRef = useRef(null);
 
   useEffect(() => {
     fetch('api/data')
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         console.log('Fetched data:', data);
         setChartData(data);
-        renderChart(data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching data:', error);
       });
   }, []);
 
-  const renderChart = (data) => {
-    const ctx = document.getElementById('barChart').getContext('2d');
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-    }
-    const chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: data.labels,
-        datasets: [{
-          label: 'Af',
-          data: data.af_data,
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          borderWidth: 1
-        }, {
-          label: 'Bij',
-          data: data.bij_data,
-          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        },
-        onClick: handleClick
-      }
-    });
-    chartInstanceRef.current = chartInstance;
-  };
+  const handleBarClick = (event, params) => {
+    if (!params) return;
 
-  const handleClick = (event) => {
-    const chartInstance = chartInstanceRef.current;
-
-    if (!chartInstance) {
-      console.error('Chart instance is not defined');
-      return;
-    }
-
-    const points = chartInstance.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
-
-    if (points.length) {
-      const firstPoint = points[0];
-      const monthIndex = firstPoint.index;
-      const monthLabel = chartInstance.data.labels[monthIndex];
-
-      console.log('monthIndex:', monthIndex);
-      console.log('monthLabel:', monthLabel);
-
-      if (!monthLabel) {
-        console.error('Invalid monthLabel:', monthLabel);
-        return;
-      }
-
-      fetch(`api/transactions?month=${monthLabel}`)
-        .then(response => response.json())
-        .then(transactions => {
-          console.log('Fetched transactions:', transactions);
-          setTransactions(transactions);
-        })
-        .catch(error => {
-          console.error('Error fetching transaction data:', error);
-        });
-    }
+    const { dataIndex } = params;
+    const monthLabel = chartData.labels[dataIndex];
+    
+    fetch(`api/transactions?month=${monthLabel}`)
+      .then((response) => response.json())
+      .then((transactions) => {
+        console.log('Fetched transactions:', transactions);
+        setTransactions(transactions);
+      })
+      .catch((error) => {
+        console.error('Error fetching transaction data:', error);
+      });
   };
 
   return (
-    <div>
-      <h1>Monthly Overview of Transactions</h1>
-      <canvas id="barChart" width="800" height="400"></canvas>
-      <div id="transactionTable">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Company</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((transaction, index) => (
-              <tr key={index}>
-                <td>{transaction.date}</td>
-                <td>{transaction.company}</td>
-                <td>{transaction.amount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Monthly Overview of Transactions
+      </Typography>
+      {chartData && (
+        <Box sx={{ width: '100%', height: 400 }}>
+          <BarChart
+            series={[
+              { name: 'Af', data: chartData.af_data },
+              { name: 'Bij', data: chartData.bij_data },
+            ]}
+            xAxis={[
+              {
+                data: chartData.labels,
+                scaleType: 'band',
+              },
+            ]}
+            height={400}
+            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+            onItemClick={handleBarClick}
+          />
+        </Box>
+      )}
+      <Typography variant="h5" gutterBottom>
+        Transactions
+      </Typography>
+      <Paper>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Company</TableCell>
+                <TableCell>Amount</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {transactions.map((transaction, index) => (
+                <TableRow key={index}>
+                  <TableCell>{transaction.datum}</TableCell>
+                  <TableCell>{transaction.company}</TableCell>
+                  <TableCell>€ {transaction.bedrag_eur}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Container>
   );
 };
 

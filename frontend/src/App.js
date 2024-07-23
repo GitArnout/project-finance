@@ -3,23 +3,30 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Home from './Home';
 import LabelData from './LabelData';
 import FinanceOverview from './FinanceOverview';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 function App() {
   return (
     <div>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/labeldata">Label Data</Link>
-          </li>
-          <li>
-          <Link to="/finance-overview">Finance Overview</Link>
-          </li>
-        </ul>
-      </nav>
+      <AppBar position="static">
+        <Toolbar>
+          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+            <Button color="inherit" component={Link} to="/">
+              <Typography variant="button">Home</Typography>
+            </Button>
+            <Button color="inherit" component={Link} to="/labeldata">
+              <Typography variant="button">Label Data</Typography>
+            </Button>
+            <Button color="inherit" component={Link} to="/finance-overview">
+              <Typography variant="button">Finance Overview</Typography>
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/labeldata" element={<LabelData />} />
