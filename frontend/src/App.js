@@ -3,6 +3,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import Home from './Home';
 import LabelData from './LabelData';
 import FinanceOverview from './FinanceOverview';
+import LabelsPage from './LabelsPage';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
@@ -24,6 +25,9 @@ function App() {
             <Button color="inherit" component={Link} to="/finance-overview">
               <Typography variant="button">Finance Overview</Typography>
             </Button>
+            <Button color="inherit" component={Link} to="/labels">
+              <Typography variant="button">Labels</Typography>
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
@@ -31,6 +35,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/labeldata" element={<LabelData />} />
         <Route path="/finance-overview" element={<FinanceOverview />} />
+        <Route path="/labels" element={<LabelsPage />} />
       </Routes>
     </div>
   );
