@@ -36,4 +36,4 @@ class TransactionLabel(Base):
     transaction_id = Column(Integer, ForeignKey('transactions.id'))
     label_id = Column(Integer, ForeignKey('labels.id'))
     transaction = relationship('Transaction', backref=backref('transaction_labels', cascade="all, delete-orphan"))
-    label = relationship('Label', backref=backref('transaction_labels', cascade="all, delete-orphan"))
+    label = relationship('Label', backref=backref('transaction_labels', cascade="all, delete-orphan")) 

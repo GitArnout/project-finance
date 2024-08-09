@@ -176,10 +176,10 @@ def load_csv_data():
                         existing_lines += 1
 
         session.commit()  # Commit the transaction
-
+        logging.info(f"CSV data loaded successfully: {new_lines} new lines, {existing_lines} existing lines out of {total_lines} total lines.")
     except Exception as e:
         session.rollback()  # Rollback the transaction if an exception occurs
-        print("Error loading data:", e)
+        logging.error(f"Error loading CSV data: {e}")
         raise e
     finally:
         session.close()
@@ -244,9 +244,6 @@ def create_tables():
                 {'name': 'Auto', 'category_id': 'RESERVERINGSUITGAVEN'}
             ]
 
-            # Create a dictionary to map label names to their IDs
-            label_id_map = {}
-
             # Insert labels into the database
             for label_data in labels_data:
                 name = label_data['name']
@@ -259,46 +256,56 @@ def create_tables():
                 session.execute(insert_stmt)
                 session.flush()
 
-                # Update the label_id_map with the newly inserted label
-                label = session.query(Label).filter_by(name=name).one()
-                label_id_map[name] = label.id
-
             session.commit()
-            print("Tables and initial data created successfully.")
+            logging.info("Tables and initial data created successfully.")
         else:
-            print("Labels already exist.")
+            logging.info("Labels already exist.")
     except Exception as e:
         session.rollback()
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}")
     finally:
         session.close()
 
 def get_ordered_labels_as_dataframe():
     session = get_session()
     try:
+        # Fetch all labels and categories from the database
         labels = session.query(Label).all()
         categories = session.query(LabelCategory).all()
 
-        label_data = [{'id': label.id, 'name': label.name, 'category_id': label.category_id} for label in labels]
-        category_data = [{'id': category.id, 'name': category.name, 'parent_id': category.parent_id} for category in categories]
+        # Prepare the label and category data with their respective fields
+        label_data = [{'id': label.id, 'name': label.name, 'category_id': label.category_id, 'type': 'label'} for label in labels]
+        category_data = [{'id': category.id, 'name': category.name, 'parent_id': category.parent_id, 'type': 'category'} for category in categories]
 
+        # Create a dictionary of categories for easy lookup
         category_dict = {cat['id']: cat for cat in category_data}
 
+        # Recursive function to build the tree structure
         def build_tree(category_id):
             category = category_dict.get(category_id)
             if not category:
                 return None
+            # Recursively build the tree for child categories
             children = [build_tree(cat['id']) for cat in category_data if cat['parent_id'] == category_id]
-            return {'id': category['id'], 'name': category['name'], 'children': [child for child in children if child]}
+            return {
+                'id': category['id'],
+                'name': category['name'],
+                'type': 'category',  # Explicitly mark this as a category
+                'children': [child for child in children if child]  # Filter out None values
+            }
 
+        # Find the root categories (those without a parent)
         roots = [build_tree(cat['id']) for cat in category_data if cat['parent_id'] is None]
 
+        # Function to append labels to each category node
         def append_labels(node):
             if 'id' in node:
                 node['labels'] = [label for label in label_data if label['category_id'] == node['id']]
+            # Recursively append labels to child nodes
             for child in node.get('children', []):
                 append_labels(child)
 
+        # Attach labels to each root category
         for root in roots:
             append_labels(root)
 
@@ -306,6 +313,7 @@ def get_ordered_labels_as_dataframe():
 
     finally:
         session.close()
+
 
 def fetch_transactions_by_label_and_month():
     session = get_session()
@@ -389,3 +397,39 @@ def fetch_transactions_by_label_and_month():
     finally:
         session.close()
         logging.info("Database session closed")
+
+def update_label_order(label_order_data):
+    session = get_session()
+    try:
+        def process_node(node, parent_category_id=None):
+            if node['type'] == 'label':
+                # This is a label, update its category_id to the parent's id
+                label = session.query(Label).filter_by(name=node['title']).first()
+                if not label:
+                    raise ValueError(f"Label with title '{node['title']}' not found")
+                
+                label.category_id = parent_category_id
+            elif node['type'] == 'category':
+                # This is a category, update its parent_id
+                category = session.query(LabelCategory).filter_by(name=node['title']).first()
+                if not category:
+                    raise ValueError(f"Category with title '{node['title']}' not found")
+                
+                category.parent_id = parent_category_id
+                
+                # Process the children of this category
+                for child in node['children']:
+                    process_node(child, parent_category_id=category.id)
+
+        # Iterate over each top-level category in the label_order_data
+        for category in label_order_data:
+            process_node(category, parent_category_id=None)
+
+        session.commit()
+        logging.info("Label order and categories updated successfully in the database.")
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating label order and categories: {e}")
+        raise e
+    finally:
+        session.close()

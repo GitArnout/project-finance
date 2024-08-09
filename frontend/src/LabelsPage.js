@@ -1,130 +1,139 @@
 import React, { useState, useEffect } from 'react';
+import SortableTree from '@nosferatu500/react-sortable-tree';
+import '@nosferatu500/react-sortable-tree/style.css';
+import { Container, Typography, Button, Paper, Box } from '@mui/material';
 import axios from 'axios';
-import {
-  Container,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  CircularProgress,
-  Box,
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-// Styled components for custom styling
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${TableCell.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${TableCell.body}`]: {
-    fontSize: 14,
-  },
-}));
+// Function to transform the API response to the treeData structure
+const mapLabelsToTreeData = (data) => {
+    const transformNode = (node) => ({
+        title: node.name,
+        id: node.id, // Store the id for later reference
+        type: node.type, // Use the type field from the API response
+        children: [
+            ...node.children.map(transformNode),
+            ...node.labels.map(label => ({
+                title: label.name,
+                id: label.id,
+                categoryId: label.category_id,
+                type: 'label', // Labels have type 'label'
+                children: []
+            }))
+        ]
+    });
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover,
-  },
-  '&:last-child td, &:last-child th': {
-    border: 0,
-  },
-}));
+    return data.map(transformNode);
+};
 
 const LabelsPage = () => {
-  const [categoriesData, setCategoriesData] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [treeData, setTreeData] = useState([]);
+    const [jsonPreview, setJsonPreview] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/api/getlabels');
-        const { details } = response.data;
-        setCategoriesData(details);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      }
+    useEffect(() => {
+        // Fetch data from the API
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('/api/getlabels'); // Updated API endpoint
+                const treeData = mapLabelsToTreeData(response.data.details);
+                setTreeData(treeData);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Function to check if a node can be dropped at a certain location
+    const canDrop = ({ node, nextParent }) => {
+        if (node.type === 'label') {
+            // Labels can only be dropped under categories, not other labels
+            return nextParent && nextParent.type === 'category';
+        } else {
+            // Categories cannot be dropped under labels
+            return !(nextParent && nextParent.type === 'label');
+        }
     };
 
-    fetchData();
-  }, []);
+    // Function to check if a node can be dragged
+    const canDrag = ({ node }) => {
+        // Prevent dragging of top-level categories like "INKOMSTEN" and "UITGAVEN"
+        const topLevelCategories = ['INKOMSTEN', 'UITGAVEN'];
+        return !(node.type === 'category' && topLevelCategories.includes(node.title));
+    };
 
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
+    // Function to customize node styling
+    const getNodeStyle = (node) => {
+        return node.type === 'label'
+            ? { backgroundColor: '#e0f7fa', border: '1px solid #4fc3f7', padding: '5px' } // Light blue background for labels
+            : { backgroundColor: '#f5f5f5', border: '1px solid #ddd', padding: '5px' }; // Light background for categories
+    };
 
-    const reorderedCategories = Array.from(categoriesData);
-    const [movedCategory] = reorderedCategories.splice(result.source.index, 1);
-    reorderedCategories.splice(result.destination.index, 0, movedCategory);
+    // Function to ensure all nodes are expanded
+    const expandAllNodes = (nodes) => {
+        return nodes.map(node => ({
+            ...node,
+            expanded: true,
+            children: expandAllNodes(node.children)
+        }));
+    };
 
-    setCategoriesData(reorderedCategories);
-  };
+    // Effect to update JSON preview
+    useEffect(() => {
+        setJsonPreview(JSON.stringify(treeData, null, 2));
+    }, [treeData]);
 
-  const renderCategoriesAndLabels = (categories, depth = 0) => {
-    return categories.map((category, index) => (
-      <Draggable key={category.id} draggableId={category.id.toString()} index={index}>
-        {(provided) => (
-          <React.Fragment>
-            <StyledTableRow
-              ref={provided.innerRef}
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}
+    const handleSubmit = async () => {
+        try {
+            // Post the treeData to the update_label_order endpoint
+            const response = await axios.post('/api/update_label_order', treeData);
+            console.log('Response:', response.data);
+            alert('Label order updated successfully!');
+        } catch (error) {
+            console.error('Error updating label order:', error);
+            alert('There was an error updating the label order.');
+        }
+    };
+
+    return (
+      <Container>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Label Page
+        </Typography>
+        <div style={{ height: '1500px' }}>
+          <SortableTree
+            treeData={expandAllNodes(treeData)}
+            onChange={newTreeData => setTreeData(newTreeData)}
+            canDrop={canDrop}
+            canDrag={canDrag}
+            generateNodeProps={({ node }) => ({
+                title: (
+                    <div style={getNodeStyle(node)}>
+                        {node.title}
+                        {node.type === 'label' && <input type="hidden" value={node.categoryId} />}
+                    </div>
+                ),
+            })}
+          />
+        </div>
+        <Box mt={2}>
+            <Typography variant="h6" component="h2">
+              JSON Preview
+            </Typography>
+            <Paper style={{ padding: '10px', maxHeight: '300px', overflowY: 'auto' }}>
+                <pre>{jsonPreview}</pre>
+            </Paper>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              style={{ marginTop: '10px' }}
             >
-              <StyledTableCell colSpan={2} style={{ paddingLeft: depth * 20 }}>
-                <Typography variant={depth === 0 ? "subtitle1" : "subtitle2"}><strong>{category.name}</strong></Typography>
-              </StyledTableCell>
-            </StyledTableRow>
-            {category.labels.map(label => (
-              <StyledTableRow key={label.id}>
-                <StyledTableCell style={{ paddingLeft: (depth + 1) * 20 }}>{label.name}</StyledTableCell>
-              </StyledTableRow>
-            ))}
-            {category.children && renderCategoriesAndLabels(category.children, depth + 1)}
-          </React.Fragment>
-        )}
-      </Draggable>
-    ));
-  };
-
-  if (loading) {
-    return <CircularProgress />;
-  }
-
-  return (
-    <Container>
-      <Typography variant="h4" gutterBottom>Labels</Typography>
-      <Box sx={{ overflowX: 'auto' }}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="categories">
-            {(provided) => (
-              <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} size="small" aria-label="labels table">
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell>Category/Label</StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                  >
-                    {renderCategoriesAndLabels(categoriesData)}
-                    {provided.placeholder}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Box>
-    </Container>
-  );
+              Submit
+            </Button>
+        </Box>
+      </Container>
+    );
 };
 
 export default LabelsPage;

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
-from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month
+from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order
 import logging
 
 bp = Blueprint('main', __name__)
@@ -29,7 +29,7 @@ def example_route():
 @bp.route('/api/dbinfo', methods=['GET'])
 def db_info():
     
-    load_dotenv()
+    load_dotenv() 
 
     dbname = os.getenv('POSTGRES_DB')
     user = os.getenv('POSTGRES_USER')
@@ -150,4 +150,45 @@ def get_transaction_summary():
         return jsonify(summary)
     except Exception as e:
         logging.error(f"Error in /api/transactions/summary: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/update_label_order', methods=['POST'])
+def update_label_order_route():
+    try:
+        data = request.get_json()
+
+        # Validate data structure
+        if not isinstance(data, list):
+            return jsonify({"error": "Invalid data format. Expected a list of label categories."}), 400
+
+        for category in data:
+            # Check that each category has a 'title', 'type', and 'children'
+            if 'title' not in category or 'children' not in category or 'type' not in category:
+                return jsonify({"error": "Each category must have a 'title', 'type', and 'children'."}), 400
+
+            # Ensure 'children' is a list, even if it can be empty
+            if not isinstance(category['children'], list):
+                return jsonify({"error": f"Invalid data format for children in category '{category['title']}'. Expected a list."}), 400
+
+            # Iterate over the children of the category
+            for child in category['children']:
+                # Ensure each child has a 'title', 'type', and 'children'
+                if 'title' not in child or 'children' not in child or 'type' not in child:
+                    return jsonify({"error": f"Each child in category '{category['title']}' must have a 'title', 'type', and 'children'."}), 400
+                
+                # Ensure 'children' is a list, even if it can be empty
+                if not isinstance(child['children'], list):
+                    return jsonify({"error": f"Invalid data format for children in label '{child['title']}'. Expected a list."}), 400
+
+                # If the item is a label, it must not have children
+                if child.get('type') == 'label' and len(child['children']) > 0:
+                    return jsonify({"error": f"Label '{child['title']}' cannot have children."}), 400
+
+        # Update label order in the database
+        update_label_order(data)
+
+        return jsonify({"message": "Label order updated successfully."}), 200
+
+    except Exception as e:
+        logging.error(f"Error in /api/update_label_order: {e}")
         return jsonify({'error': str(e)}), 500

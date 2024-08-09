@@ -1,7 +1,6 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Date, DECIMAL, ForeignKey, Text
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from time import sleep
 from dotenv import load_dotenv
 
