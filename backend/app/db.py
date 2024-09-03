@@ -433,3 +433,45 @@ def update_label_order(label_order_data):
         raise e
     finally:
         session.close()
+
+def add_label_to_db(name, category_id=None):
+    session = get_session()
+    try:
+        # Insert the new label
+        new_label = Label(name=name, category_id=category_id)
+        session.add(new_label)
+        session.flush()  # Flush to get the new ID without committing
+
+        label_id = new_label.id  # Retrieve the ID of the newly inserted label
+
+        session.commit()  # Commit the transaction
+        logging.info(f"Label '{name}' inserted successfully with ID {label_id}.")
+    except Exception as e:
+        session.rollback()  # Rollback if there is an error
+        logging.error(f"Error inserting label '{name}' into the database: {e}")
+        raise e
+    finally:
+        session.close()
+        
+    return label_id
+
+def add_category_to_db(name):
+    session = get_session()
+    try:
+        # Insert the new category
+        new_category = LabelCategory(name=name)
+        session.add(new_category)
+        session.flush()  # Flush to get the new ID without committing
+
+        category_id = new_category.id  # Retrieve the ID of the newly inserted category
+
+        session.commit()  # Commit the transaction
+        logging.info(f"Category '{name}' inserted successfully with ID {category_id}.")
+    except Exception as e:
+        session.rollback()  # Rollback if there is an error
+        logging.error(f"Error inserting category '{name}' into the database: {e}")
+        raise e
+    finally:
+        session.close()
+    
+    return category_id

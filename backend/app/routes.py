@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
-from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order
+from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db
 import logging
 
 bp = Blueprint('main', __name__)
@@ -155,34 +155,32 @@ def get_transaction_summary():
 @bp.route('/api/update_label_order', methods=['POST'])
 def update_label_order_route():
     try:
-        data = request.get_json()
-
-        # Validate data structure
+        # Directly get the list from the request
+        data = request.get_json()  # No need to use .get('treeData') since the list is at the root
+        
+        # Check if 'data' exists and is a list
         if not isinstance(data, list):
             return jsonify({"error": "Invalid data format. Expected a list of label categories."}), 400
 
-        for category in data:
-            # Check that each category has a 'title', 'type', and 'children'
-            if 'title' not in category or 'children' not in category or 'type' not in category:
-                return jsonify({"error": "Each category must have a 'title', 'type', and 'children'."}), 400
+        def validate_node(node):
+            if 'title' not in node or 'type' not in node or 'children' not in node:
+                return False
 
-            # Ensure 'children' is a list, even if it can be empty
-            if not isinstance(category['children'], list):
-                return jsonify({"error": f"Invalid data format for children in category '{category['title']}'. Expected a list."}), 400
+            if node['type'] == 'label' and len(node['children']) > 0:
+                return False
 
-            # Iterate over the children of the category
-            for child in category['children']:
-                # Ensure each child has a 'title', 'type', and 'children'
-                if 'title' not in child or 'children' not in child or 'type' not in child:
-                    return jsonify({"error": f"Each child in category '{category['title']}' must have a 'title', 'type', and 'children'."}), 400
-                
-                # Ensure 'children' is a list, even if it can be empty
-                if not isinstance(child['children'], list):
-                    return jsonify({"error": f"Invalid data format for children in label '{child['title']}'. Expected a list."}), 400
+            return True
 
-                # If the item is a label, it must not have children
-                if child.get('type') == 'label' and len(child['children']) > 0:
-                    return jsonify({"error": f"Label '{child['title']}' cannot have children."}), 400
+        def validate_tree(nodes):
+            for node in nodes:
+                if not validate_node(node):
+                    return False
+                if len(node['children']) > 0 and not validate_tree(node['children']):
+                    return False
+            return True
+
+        if not validate_tree(data):
+            return jsonify({"error": "Invalid data format. Tree structure validation failed."}), 400
 
         # Update label order in the database
         update_label_order(data)
@@ -191,4 +189,34 @@ def update_label_order_route():
 
     except Exception as e:
         logging.error(f"Error in /api/update_label_order: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+
+@bp.route('/api/add-label', methods=['POST'])
+def add_label():
+    data = request.json
+    name = data.get('name')
+
+    if not name:
+        return jsonify({'error': 'Label name is required'}), 400
+
+    try:
+        label_id = add_label_to_db(name)
+        return jsonify({'id': label_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/add-category', methods=['POST'])
+def add_category():
+    data = request.json
+    name = data.get('name')
+
+    if not name:
+        return jsonify({'error': 'Category name is required'}), 400
+
+    try:
+        category_id = add_category_to_db(name)
+        return jsonify({'id': category_id})
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
