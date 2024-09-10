@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SortableTree, { SortableTreeWithoutDndContext as SortableTreeWithDnd } from '@nosferatu500/react-sortable-tree';
 import '@nosferatu500/react-sortable-tree/style.css';
-import { Typography, Button, Paper, Box, TextField, Grid } from '@mui/material';
+import { Typography, Button, Paper, Box, TextField, Grid, Container } from '@mui/material';
 import axios from 'axios';
 import { DndProvider, DragSource } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -177,97 +177,103 @@ const LabelsPage = () => {
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div style={{ padding: '20px' }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                    Label Page
-                </Typography>
-
-                {/* Tree structure */}
-                <div style={{ height: '400px', marginBottom: '20px' }}>
-                    <SortableTreeWithDnd
-                        treeData={expandAllNodes(treeData)}
-                        onChange={(newTreeData) => {
-                            setTreeData(newTreeData);
-                        }}
-                        onMoveNode={({ node }) => handleDrop(node)} // Adding the event listener here
-                        canDrop={canDrop}
-                        canDrag={canDrag}
-                        dndType={externalNodeType}
-                        generateNodeProps={({ node }) => ({
-                            title: (
-                                <div style={getNodeStyle(node)}>
-                                    {node.title}
-                                    {node.type === 'label' && <input type="hidden" value={node.categoryId} />}
-                                </div>
-                            ),
-                        })}
-                    />
-                </div>
-
-                {/* External Nodes */}
-                <div style={{ marginBottom: '20px' }}>
-                    <Typography variant="h6" component="h2" gutterBottom>
-                        New Labels and Categories
-                    </Typography>
-                    {externalNodes.map((node, index) => (
-                        <ExternalNodeComponent key={index} node={node} />
-                    ))}
-                </div>
-
-                {/* Functionality Buttons, Inputs, and JSON Preview */}
-                <Paper style={{ padding: '10px', marginBottom: '20px' }}>
-                    <Typography variant="h6" component="h2" gutterBottom>
-                        Manage Labels and Categories
-                    </Typography>
-
-                    <Grid container spacing={2} alignItems="center" style={{ marginBottom: '20px' }}>
-                        <Grid item xs={5}>
-                            <TextField
-                                fullWidth
-                                label="New Category"
-                                value={newCategory}
-                                onChange={(e) => setNewCategory(e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Button variant="contained" color="primary" onClick={handleAddCategory}>
-                                Add Category
-                            </Button>
-                        </Grid>
-                    </Grid>
-
-                    <Grid container spacing={2} alignItems="center" style={{ marginBottom: '20px' }}>
-                        <Grid item xs={5}>
-                            <TextField
-                                fullWidth
-                                label="New Label"
-                                value={newLabel}
-                                onChange={(e) => setNewLabel(e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <Button variant="contained" color="secondary" onClick={handleAddLabel}>
-                                Add Label
-                            </Button>
-                        </Grid>
-                    </Grid>
-
-                    <Box mb={2}>
-                        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-                            Save Changes
-                        </Button>
-                    </Box>
-
-                    <Box>
-                        <Typography variant="h6" component="h2">
-                            JSON Preview
+            <Container maxWidth="lg" style={{ paddingTop: '20px' }}>
+                <Grid container spacing={4}>
+                    {/* Left Section: Tree Structure */}
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h4" component="h1" gutterBottom>
+                            Label Page
                         </Typography>
+
+                        <div style={{ height: '1500px', marginBottom: '20px' }}>
+                            <SortableTreeWithDnd
+                                treeData={expandAllNodes(treeData)}
+                                onChange={(newTreeData) => {
+                                    setTreeData(newTreeData);
+                                }}
+                                onMoveNode={({ node }) => handleDrop(node)}
+                                canDrop={canDrop}
+                                canDrag={canDrag}
+                                dndType={externalNodeType}
+                                generateNodeProps={({ node }) => ({
+                                    title: (
+                                        <div style={getNodeStyle(node)}>
+                                            {node.title}
+                                            {node.type === 'label' && <input type="hidden" value={node.categoryId} />}
+                                        </div>
+                                    ),
+                                })}
+                            />
+                        </div>
+                    </Grid>
+
+                    {/* Right Section: Input Fields, JSON Preview, and External Nodes */}
+                    <Grid item xs={12} md={6}>
+                        {/* New Labels and Categories Section */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <Typography variant="h6" component="h2" gutterBottom>
+                                New Labels and Categories
+                            </Typography>
+                            {externalNodes.map((node, index) => (
+                                <ExternalNodeComponent key={index} node={node} />
+                            ))}
+                        </div>
+
+                        {/* Manage Labels and Categories Section */}
+                        <Paper style={{ padding: '10px', marginBottom: '20px' }}>
+                            <Typography variant="h6" component="h2" gutterBottom>
+                                Manage Labels and Categories
+                            </Typography>
+
+                            <Grid container spacing={2} alignItems="center" style={{ marginBottom: '20px' }}>
+                                <Grid item xs={5}>
+                                    <TextField
+                                        fullWidth
+                                        label="New Category"
+                                        value={newCategory}
+                                        onChange={(e) => setNewCategory(e.target.value)}
+                                    />
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <Button variant="contained" color="primary" onClick={handleAddCategory}>
+                                        Add Category
+                                    </Button>
+                                </Grid>
+                            </Grid>
+
+                            <Grid container spacing={2} alignItems="center" style={{ marginBottom: '20px' }}>
+                                <Grid item xs={5}>
+                                    <TextField
+                                        fullWidth
+                                        label="New Label"
+                                        value={newLabel}
+                                        onChange={(e) => setNewLabel(e.target.value)}
+                                    />
+                                </Grid>
+                                <Grid item xs={2}>
+                                    <Button variant="contained" color="secondary" onClick={handleAddLabel}>
+                                        Add Label
+                                    </Button>
+                                </Grid>
+                            </Grid>
+
+                            <Box mb={2}>
+                                <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
+                                    Submit Changes
+                                </Button>
+                            </Box>
+                        </Paper>
+
+                        {/* JSON Preview Section */}
                         <Paper style={{ padding: '10px', maxHeight: '300px', overflowY: 'auto' }}>
+                            <Typography variant="h6" component="h2">
+                                JSON Preview
+                            </Typography>
                             <pre>{jsonPreview}</pre>
                         </Paper>
-                    </Box>
-                </Paper>
-            </div>
+                    </Grid>
+                </Grid>
+            </Container>
         </DndProvider>
     );
 };

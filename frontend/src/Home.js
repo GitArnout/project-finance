@@ -11,18 +11,22 @@ import {
   TableHead,
   TableRow,
   Box,
+  Collapse,
+  IconButton
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import './App.css';
 
 const Home = () => {
   const [chartData, setChartData] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [openRows, setOpenRows] = useState({});
 
   useEffect(() => {
     fetch('api/data')
       .then((response) => response.json())
       .then((data) => {
-        console.log('Fetched data:', data);
         setChartData(data);
       })
       .catch((error) => {
@@ -39,12 +43,15 @@ const Home = () => {
     fetch(`api/transactions?month=${monthLabel}`)
       .then((response) => response.json())
       .then((transactions) => {
-        console.log('Fetched transactions:', transactions);
         setTransactions(transactions);
       })
       .catch((error) => {
         console.error('Error fetching transaction data:', error);
       });
+  };
+
+  const handleRowClick = (id) => {
+    setOpenRows((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   return (
@@ -54,21 +61,27 @@ const Home = () => {
       </Typography>
       {chartData && (
         <Box sx={{ width: '100%', height: 400 }}>
-          <BarChart
-            series={[
-              { name: 'Af', data: chartData.af_data },
-              { name: 'Bij', data: chartData.bij_data },
-            ]}
-            xAxis={[
-              {
-                data: chartData.labels,
-                scaleType: 'band',
-              },
-            ]}
-            height={400}
-            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-            onItemClick={handleBarClick}
-          />
+        <BarChart
+          series={[
+            { name: 'Af', data: chartData.af_data },
+            { name: 'Bij', data: chartData.bij_data },
+          ]}
+          xAxis={[
+            {
+              data: chartData.labels,
+              scaleType: 'band',
+            },
+          ]}
+          height={400}
+          margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+          onItemClick={handleBarClick}
+          tooltip={{
+            formatter: (params) => {
+              const label = params.seriesName === 'Af' ? 'Totaal afschrijvingen' : 'Totaal bijschrijvingen';
+              return `${label}: €${params.value}`;
+            },
+          }}
+        />
         </Box>
       )}
       <Typography variant="h5" gutterBottom>
@@ -79,18 +92,53 @@ const Home = () => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Company</TableCell>
-                <TableCell>Amount</TableCell>
+                <TableCell />
+                <TableCell>Datum</TableCell>
+                <TableCell>Naam / Beschrijving</TableCell>
+                <TableCell>Bedrag</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {transactions.map((transaction, index) => (
-                <TableRow key={index}>
-                  <TableCell>{transaction.datum}</TableCell>
-                  <TableCell>{transaction.company}</TableCell>
-                  <TableCell>€ {transaction.bedrag_eur}</TableCell>
-                </TableRow>
+              {transactions.map((transaction) => (
+                <React.Fragment key={transaction.id}>
+                  <TableRow
+                    hover
+                    onClick={() => handleRowClick(transaction.id)}
+                    sx={{ cursor: 'pointer' }}  // Add this line for pointer cursor
+                  >
+                    <TableCell>
+                      <IconButton size="small">
+                        {openRows[transaction.id] ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                      </IconButton>
+                    </TableCell>
+                    <TableCell>{transaction.datum}</TableCell>
+                    <TableCell>{transaction.company}</TableCell>
+                    <TableCell>{transaction.af_bij === 'Af' ? '-' : ''}{transaction.bedrag_eur}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={4}>
+                      <Collapse in={openRows[transaction.id]} timeout="auto" unmountOnExit>
+                        <Box sx={{ margin: 1 }}>
+                          <Typography variant="subtitle1" gutterBottom component="div">
+                            Transaction Details
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Beschrijving:</strong> {transaction.company}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Mutatiesoort:</strong> {transaction.mutatiesoort}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Mededelingen:</strong> {transaction.mededelingen}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Label:</strong> {transaction.label}
+                          </Typography>                          
+                        </Box>
+                      </Collapse>
+                    </TableCell>
+                  </TableRow>
+                </React.Fragment>
               ))}
             </TableBody>
           </Table>

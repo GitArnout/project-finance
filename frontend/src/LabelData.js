@@ -154,7 +154,7 @@ const LabelData = () => {
             value={selectedYear}
             onChange={handleYearChange}
             displayEmpty
-            sx={{ fontSize: '0.7em' }}
+            sx={{  }}
           >
             <MenuItem value="" disabled>
               Select Year
@@ -172,7 +172,7 @@ const LabelData = () => {
             value={selectedMonth}
             onChange={handleMonthChange}
             displayEmpty
-            sx={{ fontSize: '0.7em' }}
+            sx={{  }}
           >
             <MenuItem value="" disabled>
               Select Month
@@ -187,7 +187,7 @@ const LabelData = () => {
       </Box>
       <Divider sx={{ margin: '10px 0' }} />
       <Typography variant="h5" gutterBottom>
-        Transactions with Pre-filled Labels
+        Labelled Transactions
       </Typography>
       <Paper>
         {prefilled.length === 0 ? (

@@ -7,6 +7,7 @@ from flask import current_app
 from sqlalchemy.dialects.postgresql import insert
 import logging
 from datetime import date
+import re
 
 def get_session():
     try:
@@ -72,7 +73,13 @@ def fetch_transactions(month_start=None):
             Transaction.id,
             Transaction.datum,
             Transaction.company,
+            Transaction.rekening,
+            Transaction.tegenrekening,
+            Transaction.code,
+            Transaction.af_bij,
             Transaction.bedrag_eur,
+            Transaction.mededelingen,
+            Transaction.mutatiesoort,
             Label.name.label('label')
         ).outerjoin(TransactionLabel, Transaction.id == TransactionLabel.transaction_id) \
          .outerjoin(Label, TransactionLabel.label_id == Label.id)
@@ -85,11 +92,31 @@ def fetch_transactions(month_start=None):
 
         transaction_data = []
         for transaction in transactions:
+            # Only check for time if mutatiesoort is 'Betaalautomaat' or 'iDEAL'
+            if transaction.mutatiesoort in ['Betaalautomaat', 'iDEAL']:
+                # Search for time pattern (HH:MM) in 'mededelingen'
+                time_match = re.search(r'\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b', transaction.mededelingen)
+                if time_match:
+                    time_str = time_match.group(0)
+                    # Combine date and time
+                    datetime_obj = datetime.combine(transaction.datum, datetime.strptime(time_str, '%H:%M').time())
+                    datum_with_time = datetime_obj.strftime('%d-%m-%Y %H:%M')
+                else:
+                    datum_with_time = transaction.datum.strftime('%d-%m-%Y')
+            else:
+                datum_with_time = transaction.datum.strftime('%d-%m-%Y')
+            
             transaction_data.append({
                 'id': transaction.id,
-                'datum': transaction.datum,
+                'datum': datum_with_time,
                 'company': transaction.company,
+                'rekening': transaction.rekening,
+                'tegenrekening' : transaction.tegenrekening,
+                'code' : transaction.code,
+                'af_bij': transaction.af_bij,
                 'bedrag_eur': transaction.bedrag_eur,
+                'mededelingen' : transaction.mededelingen,
+                'mutatiesoort' : transaction.mutatiesoort,
                 'label': transaction.label
             })
 
@@ -128,6 +155,11 @@ def fetch_chart_data():
     finally:
         session.close()
 
+import csv
+from sqlalchemy.orm import Session
+from datetime import datetime
+import logging
+
 def load_csv_data():
     session = get_session()
     total_lines = 0
@@ -136,18 +168,28 @@ def load_csv_data():
 
     try:
         with session.begin():  # Begin a transaction
-
-            with open('data.csv', 'r') as file:
+            with open('data.csv', 'r', encoding='utf-8') as file:  # Added encoding
                 reader = csv.DictReader(file)
+
+                # Strip whitespace from fieldnames just in case
+                reader.fieldnames = [field.strip() for field in reader.fieldnames]
+
+                # Ensure 'Bedrag (EUR)' is in the headers
+                if 'Bedrag (EUR)' not in reader.fieldnames:
+                    raise ValueError("Column 'Bedrag (EUR)' not found in CSV file.")
+
                 for row in reader:
                     total_lines += 1
 
                     bedrag_eur = row['Bedrag (EUR)'].replace(',', '.')  # Replace comma with period
 
+                    # Convert date string to a datetime object
+                    datum = datetime.strptime(row['Datum'], '%Y%m%d').date()
+
                     # Check if the record already exists
                     exists = session.query(Transaction.id).filter_by(
-                        datum=row['Datum'],
-                        company=row['Company'],
+                        datum=datum,
+                        company=row['Naam / Omschrijving'],
                         rekening=row['Rekening'],
                         tegenrekening=row['Tegenrekening'],
                         code=row['Code'],
@@ -160,8 +202,8 @@ def load_csv_data():
                     if not exists:
                         # Insert new record
                         new_transaction = Transaction(
-                            datum=row['Datum'],
-                            company=row['Company'],
+                            datum=datum,
+                            company=row['Naam / Omschrijving'],
                             rekening=row['Rekening'],
                             tegenrekening=row['Tegenrekening'],
                             code=row['Code'],
@@ -189,6 +231,7 @@ def load_csv_data():
         "new_lines": new_lines,
         "existing_lines": existing_lines
     }
+
 
 def create_tables():
     session = get_session()
