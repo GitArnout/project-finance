@@ -14,6 +14,7 @@ import {
   Snackbar,
   Alert,
   Divider,
+  Button, // Add this import for the button
 } from '@mui/material';
 
 const LabelData = () => {
@@ -25,6 +26,9 @@ const LabelData = () => {
   const [labels, setLabels] = useState([]);
   const [updateMessage, setUpdateMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // New: Static suggested label for now
+  const staticSuggestedLabel = 'Boodschappen';
 
   const monthMapping = {
     1: 'January',
@@ -134,6 +138,11 @@ const LabelData = () => {
     }
   };
 
+  const handleApplySuggestedLabel = (transactionId) => {
+    // For now, just use the staticSuggestedLabel
+    handleLabelUpdate(transactionId, staticSuggestedLabel);
+  };
+
   const separateTransactions = () => {
     const prefilled = transactions.filter(transaction => transaction.label);
     const nonPrefilled = transactions.filter(transaction => !transaction.label);
@@ -198,28 +207,43 @@ const LabelData = () => {
           <List>
             {prefilled.map((transaction, index) => (
               <React.Fragment key={index}>
-                <ListItem sx={{ padding: '4px 16px' }}>
+                <ListItem sx={{ padding: '4px 16px', alignItems: 'center' }}>
                   <ListItemText
                     primary={`${transaction.datum} - ${transaction.company} - €${transaction.bedrag_eur !== undefined ? parseFloat(transaction.bedrag_eur).toFixed(2) : 'N/A'}`}
                   />
-                  <FormControl variant="outlined" sx={{ minWidth: 250 }}>
-                    <Select
-                      size="small"
-                      value={transaction.label || 'Selecteer label voor transactie'}
-                      onChange={e => handleLabelUpdate(transaction.id, e.target.value)}
-                      displayEmpty
-                      sx={{ fontSize: '0.7em' }}
-                    >
-                      <MenuItem disabled>
-                        Selecteer label voor transactie
-                      </MenuItem>
-                      {labels.map(label => (
-                        <MenuItem key={label.name} value={label.name}>
-                          {label.category} &gt; {label.name}
+                  <Box display="flex" alignItems="center">
+                    <FormControl variant="outlined" sx={{ minWidth: 250 }}>
+                      <Select
+                        size="small"
+                        value={transaction.label || 'Selecteer label voor transactie'}
+                        onChange={e => handleLabelUpdate(transaction.id, e.target.value)}
+                        displayEmpty
+                        sx={{ fontSize: '0.7em' }}
+                      >
+                        <MenuItem disabled>
+                          Selecteer label voor transactie
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                        {labels.map(label => (
+                          <MenuItem key={label.name} value={label.name}>
+                            {label.category} &gt; {label.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    {/* New section for suggested label */}
+                    <Typography variant="body2" sx={{ marginLeft: '16px' }}>
+                      Suggested Label: {staticSuggestedLabel}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      sx={{ marginLeft: '8px' }}
+                      onClick={() => handleApplySuggestedLabel(transaction.id)}
+                    >
+                      Apply
+                    </Button>
+                  </Box>
                 </ListItem>
                 {index < prefilled.length - 1 && <Divider />}
               </React.Fragment>
@@ -240,28 +264,43 @@ const LabelData = () => {
           <List>
             {nonPrefilled.map((transaction, index) => (
               <React.Fragment key={index}>
-                <ListItem sx={{ padding: '4px 16px' }}>
+                <ListItem sx={{ padding: '4px 16px', alignItems: 'center' }}>
                   <ListItemText
                     primary={`${transaction.datum} - ${transaction.company} - €${transaction.bedrag_eur !== undefined ? parseFloat(transaction.bedrag_eur).toFixed(2) : 'N/A'}`}
                   />
-                  <FormControl variant="outlined" sx={{ minWidth: 250 }}>
-                    <Select
-                      size="small"
-                      value="Selecteer label voor transactie"
-                      onChange={e => handleLabelUpdate(transaction.id, e.target.value)}
-                      displayEmpty
-                      sx={{ fontSize: '0.7em' }}
-                    >
-                      <MenuItem disabled>
-                        Selecteer label voor transactie
-                      </MenuItem>
-                      {labels.map(label => (
-                        <MenuItem key={label.name} value={label.name}>
-                          {label.category} &gt; {label.name}
+                  <Box display="flex" alignItems="center">
+                    <FormControl variant="outlined" sx={{ minWidth: 250 }}>
+                      <Select
+                        size="small"
+                        value="Selecteer label voor transactie"
+                        onChange={e => handleLabelUpdate(transaction.id, e.target.value)}
+                        displayEmpty
+                        sx={{ fontSize: '0.7em' }}
+                      >
+                        <MenuItem disabled>
+                          Selecteer label voor transactie
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                        {labels.map(label => (
+                          <MenuItem key={label.name} value={label.name}>
+                            {label.category} &gt; {label.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    {/* New section for suggested label */}
+                    <Typography variant="body2" sx={{ marginLeft: '16px' }}>
+                      Suggested Label: {staticSuggestedLabel}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      sx={{ marginLeft: '8px' }}
+                      onClick={() => handleApplySuggestedLabel(transaction.id)}
+                    >
+                      Apply
+                    </Button>
+                  </Box>
                 </ListItem>
                 {index < nonPrefilled.length - 1 && <Divider />}
               </React.Fragment>

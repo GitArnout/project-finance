@@ -4,6 +4,7 @@ import Home from './Home';
 import LabelData from './LabelData';
 import FinanceOverview from './FinanceOverview';
 import LabelsPage from './LabelsPage';
+import TrainModelPage from './TrainModelPage';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
@@ -28,6 +29,9 @@ function App() {
             <Button color="inherit" component={Link} to="/labels">
               <Typography variant="button">Labels</Typography>
             </Button>
+            <Button color="inherit" component={Link} to="/train-model">
+              <Typography variant="button">Train Model</Typography>
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
@@ -36,6 +40,7 @@ function App() {
         <Route path="/labeldata" element={<LabelData />} />
         <Route path="/finance-overview" element={<FinanceOverview />} />
         <Route path="/labels" element={<LabelsPage />} />
+        <Route path="/train-model" element={<TrainModelPage />} />
       </Routes>
     </div>
   );

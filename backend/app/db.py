@@ -7,6 +7,7 @@ from flask import current_app
 from sqlalchemy.dialects.postgresql import insert
 import logging
 from datetime import date
+from datetime import datetime
 import re
 
 def get_session():
@@ -154,11 +155,6 @@ def fetch_chart_data():
         raise e
     finally:
         session.close()
-
-import csv
-from sqlalchemy.orm import Session
-from datetime import datetime
-import logging
 
 def load_csv_data():
     session = get_session()

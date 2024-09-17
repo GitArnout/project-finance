@@ -10,3 +10,7 @@ python-dotenv==1.0.1
 sqlalchemy==2.0.31
 kubernetes==30.1.0
 numpy==1.23.0
+joblib==1.4.2
+transformers==4.44.2
+datasets==3.0.0
+scikit-learn==1.5.1

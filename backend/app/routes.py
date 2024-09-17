@@ -4,8 +4,14 @@ from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
 from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db
 import logging
+from .db import get_session
+from .models import TransactionLabel, Label
+import logging
+import joblib
+
 
 bp = Blueprint('main', __name__)
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -220,3 +226,35 @@ def add_category():
         return jsonify({'id': category_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+""" @bp.route('/api/train-model', methods=['POST'])
+def train_model():
+    session = get_session()
+
+    try:
+        # Fetch all transactions that have labels
+        labeled_transactions = session.query(TransactionLabel).all()
+
+        if not labeled_transactions:
+            return jsonify({'message': 'No labeled transactions found for training'}), 400
+
+        # Fetch the transaction text and labels
+        data = [(trans.transaction_id, trans.label.name) for trans in labeled_transactions]
+
+
+        # Assuming you have a function that trains the model
+        model = train_model_on_data(data)
+
+        # Save the trained model
+        joblib.dump(model, 'trained_model.pkl')
+        
+        logging.info(f"Model trained on {len(data)} labeled transactions.")
+
+        return jsonify({'message': 'Model trained successfully', 'transactions': len(data)}), 200
+
+    except Exception as e:
+        logging.error(f"Error training the model: {e}")
+        return jsonify({'message': f"Error training the model: {e}"}), 500
+    finally:
+        session.close() """
