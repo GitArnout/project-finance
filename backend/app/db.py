@@ -9,6 +9,7 @@ import logging
 from datetime import date
 from datetime import datetime
 import re
+import joblib  # Import joblib to load the model
 
 def get_session():
     try:
@@ -68,6 +69,11 @@ def update_transaction_label(transaction_id, label_name):
         session.close()
 
 def fetch_transactions(month_start=None):
+    # Load your custom model (ensure the path is correct)
+    MODEL_PATH = 'label_predictor.joblib'
+    custom_model = joblib.load(MODEL_PATH)
+
+
     session = get_session()
     try:
         query = session.query(
@@ -107,18 +113,34 @@ def fetch_transactions(month_start=None):
             else:
                 datum_with_time = transaction.datum.strftime('%d-%m-%Y')
             
+            # Get the suggested label from the model
+            # Prepare input for the model (you might need to adjust the input format based on your model)
+            model_input = [transaction.company]  # Assuming company is used for prediction
+            suggested_label = custom_model.predict(model_input)[0]  # Predict label
+            label_probabilities = custom_model.predict_proba(model_input)[0]  # Get probabilities for all labels
+
+            # Find the index of the suggested label
+            label_classes = custom_model.classes_  # Get the list of all labels
+            suggested_label_index = list(label_classes).index(suggested_label)
+            suggested_label_probability = label_probabilities[suggested_label_index]  # Get probability for the suggested label
+
+            logging.info(f"Model input: {model_input}")
+            logging.info(f"Predicted probabilities: {label_probabilities}")
+
             transaction_data.append({
                 'id': transaction.id,
                 'datum': datum_with_time,
                 'company': transaction.company,
                 'rekening': transaction.rekening,
-                'tegenrekening' : transaction.tegenrekening,
-                'code' : transaction.code,
+                'tegenrekening': transaction.tegenrekening,
+                'code': transaction.code,
                 'af_bij': transaction.af_bij,
                 'bedrag_eur': transaction.bedrag_eur,
-                'mededelingen' : transaction.mededelingen,
-                'mutatiesoort' : transaction.mutatiesoort,
-                'label': transaction.label
+                'mededelingen': transaction.mededelingen,
+                'mutatiesoort': transaction.mutatiesoort,
+                'label': transaction.label,
+                'suggested_label': suggested_label,
+                'label_probability': suggested_label_probability  # Store only the probability for the suggested label
             })
 
         return transaction_data

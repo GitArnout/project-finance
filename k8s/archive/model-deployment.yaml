@@ -42,7 +42,7 @@ spec:
         image: dockerhub88/model-trainer:latest
         resources:
           limits:
-            cpu: "2"  # You can specify a CPU limit instead, for example
+            nvidia.com/gpu: 1  # Request 1 GPU
         volumeMounts:
         - name: model-storage
           mountPath: /app/distilbert_model  # Persistent storage for the model

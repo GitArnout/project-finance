@@ -104,23 +104,23 @@ else
 fi
 
 # Build and push model training Docker image
-echo "Step 10/14: Building model training Docker image..."
-if docker build -t $MODEL_IMAGE -f Dockerfile.model .; then
-    echo "Step 10/14: Model training Docker image built successfully."
-    passed_steps=$((passed_steps + 1))
-else
-    echo "Step 10/14: Failed to build model training Docker image."
-    exit 1
-fi
+#echo "Step 10/14: Building model training Docker image..."
+#if docker build -t $MODEL_IMAGE -f Dockerfile.model .; then
+#    echo "Step 10/14: Model training Docker image built successfully."
+#    passed_steps=$((passed_steps + 1))
+#else
+#    echo "Step 10/14: Failed to build model training Docker image."
+#    exit 1
+#fi
 
-echo "Step 11/14: Pushing model training Docker image..."
-if docker push $MODEL_IMAGE; then
-    echo "Step 11/14: Model training Docker image pushed successfully."
-    passed_steps=$((passed_steps + 1))
-else
-    echo "Step 11/14: Failed to push model training Docker image."
-    exit 1
-fi
+# echo "Step 11/14: Pushing model training Docker image..."
+# if docker push $MODEL_IMAGE; then
+#     echo "Step 11/14: Model training Docker image pushed successfully."
+#     passed_steps=$((passed_steps + 1))
+# else
+#     echo "Step 11/14: Failed to push model training Docker image."
+#     exit 1
+# fi
 
 # Delete existing Kubernetes deployments and services (moved here before applying new ones)
 echo "Step 12/14: Deleting existing Kubernetes deployments and services..."

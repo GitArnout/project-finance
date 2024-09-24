@@ -4,10 +4,6 @@ from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
 from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db
 import logging
-from .db import get_session
-from .models import TransactionLabel, Label
-import logging
-import joblib
 
 
 bp = Blueprint('main', __name__)

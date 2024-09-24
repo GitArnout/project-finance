@@ -4,9 +4,9 @@ FROM nvcr.io/nvidia/pytorch:23.06-py3
 # Set the working directory
 WORKDIR /app
 
-# Install additional dependencies
+# Install additional dependencies, including SQLAlchemy
 RUN pip install --upgrade pip \
-    && pip install joblib transformers datasets scikit-learn accelerate
+    && pip install joblib transformers datasets scikit-learn accelerate SQLAlchemy 
 
 # Copy the training script to the container
 COPY model/train_model.py /app/train_model.py
