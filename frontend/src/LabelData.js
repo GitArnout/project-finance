@@ -25,6 +25,7 @@ const LabelData = () => {
   const [updateMessage, setUpdateMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [excludeLabeled, setExcludeLabeled] = useState(false);
+  const [showHighConfidence, setShowHighConfidence] = useState(false);
 
   const monthMapping = {
     1: 'January',
@@ -68,17 +69,19 @@ const LabelData = () => {
     if (selectedYear && selectedMonth) {
       fetchTransactions(selectedYear, selectedMonth);
     }
-  }, [selectedYear, selectedMonth, excludeLabeled]);
+  }, [selectedYear, selectedMonth, excludeLabeled, showHighConfidence]);
 
   const processLabels = details => {
     const labelList = [];
+    
     const traverse = (node, category) => {
       const currentCategory = category ? `${category} > ${node.name}` : node.name;
-      if (!node.children || node.children.length === 0) {
+      if (node.labels && node.labels.length > 0) {
         node.labels.forEach(label => {
           labelList.push({ name: label.name, category: currentCategory });
         });
-      } else {
+      }
+      if (node.children && node.children.length > 0) {
         node.children.forEach(child => traverse(child, currentCategory));
       }
     };
@@ -109,6 +112,9 @@ const LabelData = () => {
           if (excludeLabeled) {
             filteredTransactions = data.filter(t => !t.label);
           }
+          if (showHighConfidence) {
+            filteredTransactions = filteredTransactions.filter(t => t.label_probability >= 0.6);
+          }
           filteredTransactions.sort((a, b) => (a.label ? 1 : -1));
           setTransactions(filteredTransactions);
           setLoading(false);
@@ -132,7 +138,9 @@ const LabelData = () => {
         .then(response => response.json())
         .then(data => {
           setUpdateMessage(`De transactie: ${transactionId} is geupdate met label: ${selectedLabel}`);
-          fetchTransactions(selectedYear, selectedMonth);
+          setTransactions(prevTransactions =>
+            prevTransactions.filter(transaction => transaction.id !== transactionId)
+          );
           setTimeout(() => setUpdateMessage(''), 10000);
         })
         .catch(error => console.error('Error updating label:', error));
@@ -143,9 +151,8 @@ const LabelData = () => {
     handleLabelUpdate(transactionId, suggestedLabel);
   };
 
-
   const columns = [
-    { field: 'datum', headerName: 'Date', width: 180 },
+    { field: 'datum', headerName: 'Date', width: 150 },
     {
       field: 'company',
       headerName: 'Company',
@@ -154,7 +161,7 @@ const LabelData = () => {
     {
       field: 'bedrag_eur',
       headerName: 'Amount (€)',
-      width: 100,
+      width: 80,
       renderCell: params => {
         if (params.row.af_bij) {
           return params.row.af_bij === 'Af' ? `-${params.row.bedrag_eur}` : params.row.bedrag_eur;
@@ -167,43 +174,47 @@ const LabelData = () => {
       headerName: 'Label',
       width: 275,
       renderCell: (params) => (
-        <FormControl variant="outlined" sx={{ minWidth: 270, width: 270 }}>
+        <FormControl variant="outlined" sx={{ minWidth: 250, width: 250 }}>
           <Select
             size="small"
-            value={params.row.label || ''} // Use the 'label' property to pre-fill
+            value={params.row.label || ''}
             displayEmpty
             onChange={(e) => handleLabelUpdate(params.row.id, e.target.value)}
             renderValue={(selected) => {
               if (!selected) {
-                return <em>Selecteer label voor transactie</em>; // Placeholder when no value is selected
+                return <em>Selecteer label voor transactie</em>;
               }
-              return selected; // Display selected label
+              return selected;
             }}
+            inputProps={{ style: { fontSize: '14px' } }}
+            sx={{ fontSize: '14px' }}
           >
-            <MenuItem disabled value=""><em>Selecteer label voor transactie</em></MenuItem>
+            <MenuItem disabled value="" sx={{ fontSize: 14 }}>
+              <em>Selecteer label voor transactie</em>
+            </MenuItem>
             {labels.map((label) => (
-              <MenuItem key={label.name} value={label.name}>
+              <MenuItem key={label.name} value={label.name} sx={{ fontSize: 14 }}>
                 {label.category} &gt; {label.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
       ),
-    },    
+    },
     {
       field: 'suggested_label',
       headerName: 'Suggested Label',
-      width: 300,
+      width: 225,
       renderCell: params => (
         <>
-          {params.row.suggested_label} ({Math.round(params.row.label_probability * 100)}% probability)
+          {params.row.suggested_label} ({Math.round(params.row.label_probability * 100)}%)
         </>
       ),
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 180,
+      width: 80,
       renderCell: params => (
         <Button
           variant="contained"
@@ -222,7 +233,7 @@ const LabelData = () => {
       <Typography variant="h4" gutterBottom>
         Select Year and Month
       </Typography>
-      <Box display="flex" justifyContent="space-between" mb={3}>
+      <Box display="flex" mb={3}>
         <FormControl variant="outlined" sx={{ minWidth: 120 }}>
           <Select size="small" value={selectedYear} onChange={handleYearChange} displayEmpty>
             <MenuItem value="" disabled>
@@ -252,33 +263,27 @@ const LabelData = () => {
         control={<Checkbox checked={excludeLabeled} onChange={() => setExcludeLabeled(!excludeLabeled)} color="primary" />}
         label="Exclude labeled transactions"
       />
+      <FormControlLabel
+        control={<Checkbox checked={showHighConfidence} onChange={() => setShowHighConfidence(!showHighConfidence)} color="primary" />}
+        label="Show transactions with label probability > 60%"
+      />
       <Typography variant="h5" gutterBottom>
         Transactions
       </Typography>
       {loading ? (
-        <Box display="flex" justifyContent="center" mt={2}>
+        <Box display="flex" justifyContent="center" alignItems="center" height={400}>
           <CircularProgress />
         </Box>
       ) : (
-        <Box sx={{ height: 400, width: '100%' }}>
-          <DataGrid
-            rows={transactions}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 25]}
-            getRowId={row => row.id}
-            rowHeight={35}
-            autoHeight
-          />
+        <Box height={600} width="100%">
+          <DataGrid rows={transactions} columns={columns} pageSize={20} getRowId={row => row.id} rowHeight={40} />
         </Box>
       )}
-      {updateMessage && (
-        <Snackbar open={!!updateMessage} autoHideDuration={6000} onClose={() => setUpdateMessage('')}>
-          <Alert onClose={() => setUpdateMessage('')} severity="success">
-            {updateMessage}
-          </Alert>
-        </Snackbar>
-      )}
+      <Snackbar open={Boolean(updateMessage)} autoHideDuration={6000} onClose={() => setUpdateMessage('')}>
+        <Alert onClose={() => setUpdateMessage('')} severity="success">
+          {updateMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
