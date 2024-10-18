@@ -54,6 +54,9 @@ const Home = () => {
     setOpenRows((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  // Compute income minus expenses (bij_data - af_data) and assign colors
+  const balanceData = chartData?.bij_data.map((bij, index) => bij - chartData.af_data[index]);
+
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
@@ -61,29 +64,63 @@ const Home = () => {
       </Typography>
       {chartData && (
         <Box sx={{ width: '100%', height: 400 }}>
-        <BarChart
-          series={[
-            { name: 'Af', data: chartData.af_data },
-            { name: 'Bij', data: chartData.bij_data },
-          ]}
-          xAxis={[
-            {
-              data: chartData.labels,
-              scaleType: 'band',
-            },
-          ]}
-          height={400}
-          margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
-          onItemClick={handleBarClick}
-          tooltip={{
-            formatter: (params) => {
-              const label = params.seriesName === 'Af' ? 'Totaal afschrijvingen' : 'Totaal bijschrijvingen';
-              return `${label}: €${params.value}`;
-            },
-          }}
-        />
+          {/* First Bar Chart: Income vs. Expenses */}
+          <BarChart
+            series={[
+              { name: 'Af', data: chartData.af_data },
+              { name: 'Bij', data: chartData.bij_data },
+            ]}
+            xAxis={[
+              {
+                data: chartData.labels,
+                scaleType: 'band',
+              },
+            ]}
+            height={400}
+            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+            onItemClick={handleBarClick}
+            tooltip={{
+              formatter: (params) => {
+                const label = params.seriesName === 'Af' ? 'Totaal afschrijvingen' : 'Totaal bijschrijvingen';
+                return `${label}: €${params.value}`;
+              },
+            }}
+          />
         </Box>
       )}
+
+      {/* Second Bar Chart: Balance (Income - Expenses) */}
+      {chartData && (
+        <Box sx={{ width: '100%', height: 400, mt: 4 }}>
+          <BarChart
+            series={[
+              {
+                name: 'Balance',
+                data: balanceData,
+                itemStyle: {
+                  // Apply color based on value: red for negative, green for positive
+                  color: (params) => (balanceData[params.dataIndex] < 0 ? 'red' : 'green'),
+                },
+              },
+            ]}
+            xAxis={[
+              {
+                data: chartData.labels,
+                scaleType: 'band',
+              },
+            ]}
+            height={400}
+            margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
+            tooltip={{
+              formatter: (params) => {
+                const balance = params.value;
+                return `Balance: €${balance}`;
+              },
+            }}
+          />
+        </Box>
+      )}
+
       <Typography variant="h5" gutterBottom>
         Transactions
       </Typography>
