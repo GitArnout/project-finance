@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
-from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db
+from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db, fetch_transaction_sums_per_label_per_month
 import logging
 
 
@@ -223,6 +223,13 @@ def add_category():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/api/transaction-sums', methods=['GET'])
+def get_transaction_sums():
+    try:
+        transaction_sums = fetch_transaction_sums_per_label_per_month()
+        return transaction_sums
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 """ @bp.route('/api/train-model', methods=['POST'])
 def train_model():

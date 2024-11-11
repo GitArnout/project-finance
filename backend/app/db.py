@@ -3,7 +3,7 @@ import csv
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from .models import Transaction, Label, TransactionLabel, LabelCategory
-from flask import current_app
+from flask import current_app, jsonify
 from sqlalchemy.dialects.postgresql import insert
 import logging
 from datetime import date
@@ -536,3 +536,73 @@ def add_category_to_db(name):
         session.close()
     
     return category_id
+def fetch_transaction_sums_per_label_per_month():
+
+    session = get_session()
+    try:
+        query = session.query(
+            Transaction.id,
+            Transaction.datum,
+            Transaction.company,
+            Transaction.rekening,
+            Transaction.tegenrekening,
+            Transaction.code,
+            Transaction.af_bij,
+            Transaction.bedrag_eur,
+            Transaction.mededelingen,
+            Transaction.mutatiesoort,
+            Label.name.label('label')
+        ).outerjoin(TransactionLabel, Transaction.id == TransactionLabel.transaction_id) \
+         .outerjoin(Label, TransactionLabel.label_id == Label.id)
+
+        transactions = query.all()
+
+        # Prepare data for aggregation
+        transaction_data = []
+        for transaction in transactions:
+            # Only check for time if mutatiesoort is 'Betaalautomaat' or 'iDEAL'
+            if transaction.mutatiesoort in ['Betaalautomaat', 'iDEAL']:
+                # Search for time pattern (HH:MM) in 'mededelingen'
+                time_match = re.search(r'\b([01]?[0-9]|2[0-3]):[0-5][0-9]\b', transaction.mededelingen)
+                if time_match:
+                    time_str = time_match.group(0)
+                    # Combine date and time
+                    datetime_obj = datetime.combine(transaction.datum, datetime.strptime(time_str, '%H:%M').time())
+                    datum_with_time = datetime_obj.strftime('%d-%m-%Y %H:%M')
+                else:
+                    datum_with_time = transaction.datum.strftime('%d-%m-%Y')
+            else:
+                datum_with_time = transaction.datum.strftime('%d-%m-%Y')
+            
+
+            transaction_data.append({
+                'datum': transaction.datum,
+                'label': transaction.label,
+                'bedrag_eur': transaction.bedrag_eur
+            })
+
+        # Convert to DataFrame for easy aggregation
+        df = pd.DataFrame(transaction_data)
+
+        # Ensure 'datum' is a datetime object
+        df['datum'] = pd.to_datetime(df['datum'])
+
+        # Extract year and month for grouping
+        df['year_month'] = df['datum'].dt.to_period('M')
+
+        # Group by label and year_month, then sum the amounts
+        aggregated = df.groupby(['label', 'year_month'])['bedrag_eur'].sum().reset_index()
+
+        # Convert year_month back to string for JSON serialization
+        aggregated['year_month'] = aggregated['year_month'].astype(str)
+
+        # Convert to list of dictionaries
+        result = aggregated.to_dict(orient='records')
+
+        return jsonify(result)
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error fetching transaction sums: {e}")
+        raise e
+    finally:
+        session.close()
