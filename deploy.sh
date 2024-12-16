@@ -65,24 +65,7 @@ else
     exit 1
 fi
 
-# Build and push frontend Docker image
-echo "Step 6/14: Building frontend Docker image..."
-if docker build -t $FRONTEND_IMAGE -f Dockerfile.frontend .; then
-    echo "Step 6/14: Frontend Docker image built successfully."
-    passed_steps=$((passed_steps + 1))
-else
-    echo "Step 6/14: Failed to build frontend Docker image."
-    exit 1
-fi
 
-echo "Step 7/14: Pushing frontend Docker image..."
-if docker push $FRONTEND_IMAGE; then
-    echo "Step 7/14: Frontend Docker image pushed successfully."
-    passed_steps=$((passed_steps + 1))
-else
-    echo "Step 7/14: Failed to push frontend Docker image."
-    exit 1
-fi
 
 # Build and push backend Docker image
 echo "Step 8/14: Building backend Docker image..."

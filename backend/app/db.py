@@ -10,6 +10,8 @@ from datetime import date
 from datetime import datetime
 import re
 import joblib  # Import joblib to load the model
+import sys
+
 
 def get_session():
     try:
@@ -603,6 +605,264 @@ def fetch_transaction_sums_per_label_per_month():
     except Exception as e:
         session.rollback()
         logging.error(f"Error fetching transaction sums: {e}")
+        raise e
+    finally:
+        session.close()
+
+def get_reserveringsuitgaven_sum_per_month():
+    session = get_session()
+    try:
+        # Get the LabelCategory object for 'RESERVERINGSUITGAVEN'
+        reserveringsuitgaven_category = session.query(LabelCategory).filter(LabelCategory.name == 'RESERVERINGSUITGAVEN').first()
+        if not reserveringsuitgaven_category:
+            raise ValueError("Category 'RESERVERINGSUITGAVEN' not found")
+
+        # Get the labels linked to this category
+        labels = reserveringsuitgaven_category.labels
+
+        # Get the names of the labels
+        label_names = [label.name for label in labels]
+
+        # Fetch transactions for these labels
+        query = session.query(
+            Transaction.datum,
+            Transaction.bedrag_eur,
+            Label.name.label('label')
+        ).join(TransactionLabel, Transaction.id == TransactionLabel.transaction_id) \
+         .join(Label, TransactionLabel.label_id == Label.id) \
+         .filter(Label.name.in_(label_names))
+
+        transactions = query.all()
+        logging.info(f"Fetched {len(transactions)} transactions")
+
+        # Create a DataFrame from the transactions
+        data = {
+            'datum': [transaction.datum for transaction in transactions],
+            'bedrag_eur': [transaction.bedrag_eur for transaction in transactions],
+            'label': [transaction.label for transaction in transactions]
+        }
+        df = pd.DataFrame(data)
+        logging.info("Created DataFrame from transactions")
+
+        # Ensure 'datum' is parsed correctly
+        def parse_date(date_val):
+            try:
+                if isinstance(date_val, date):  # If date_val is already a datetime.date object
+                    return pd.to_datetime(date_val)
+                elif isinstance(date_val, str):
+                    if len(date_val) == 8:  # Format YYYYMMDD
+                        return pd.to_datetime(date_val, format='%Y%m%d')
+                    else:
+                        return pd.to_datetime(date_val)  # Default parser
+                else:
+                    return pd.NaT  # Return NaT (Not a Time) for invalid cases
+            except Exception as e:
+                logging.error(f"Error parsing date: {date_val} - {e}")
+                return pd.NaT
+
+        df['datum'] = df['datum'].apply(parse_date)
+        logging.info("Parsed 'datum' column to datetime")
+
+        # Drop rows with invalid dates
+        df = df.dropna(subset=['datum'])
+        logging.info(f"Filtered DataFrame to remove rows with invalid dates, resulting in {len(df)} records")
+
+        # Extract year and month for grouping
+        df['year_month'] = df['datum'].dt.to_period('M')
+
+        # Group by year_month and sum the amounts
+        aggregated = df.groupby(['year_month'])['bedrag_eur'].sum().reset_index()
+
+        # Convert year_month back to string for JSON serialization
+        aggregated['year_month'] = aggregated['year_month'].astype(str)
+
+        # Convert to list of dictionaries
+        result = aggregated.to_dict(orient='records')
+
+        return jsonify(result)
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error fetching RESERVERINGSUITGAVEN transaction sums: {e}")
+        raise e
+    finally:
+        session.close()
+
+
+def get_expenses_per_main_category():
+    session = get_session()
+    sys.setrecursionlimit(1500)
+    try:
+        logging.info("Fetching UITGAVEN category")
+
+        # Get the LabelCategory object for 'UITGAVEN'
+        uitgaven_category = session.query(LabelCategory).filter(LabelCategory.name == 'UITGAVEN').first()
+        if not uitgaven_category:
+            raise ValueError("Category 'UITGAVEN' not found")
+
+        logging.info(f"Fetched UITGAVEN category with ID: {uitgaven_category.id}")
+
+        # Get the first-level children of the 'UITGAVEN' category
+        first_level_children = session.query(LabelCategory).filter(LabelCategory.parent_id == uitgaven_category.id).all()
+
+        logging.info(f"Fetched {len(first_level_children)} first-level children of UITGAVEN category")
+
+        results = []
+
+        for child in first_level_children:
+            logging.info(f"Processing child category: {child.name}")
+
+            # Get the labels linked to this child category
+            labels = child.labels
+
+            # Get the names of the labels
+            label_names = [label.name for label in labels]
+
+            logging.info(f"Fetched {len(label_names)} labels for child category: {child.name}")
+
+            # Fetch transactions for these labels
+            query = session.query(
+                func.date_trunc('month', Transaction.datum).label('month'),
+                func.sum(Transaction.bedrag_eur).label('total_amount')
+            ).join(TransactionLabel, Transaction.id == TransactionLabel.transaction_id) \
+             .join(Label, TransactionLabel.label_id == Label.id) \
+             .filter(Label.name.in_(label_names)) \
+             .group_by(func.date_trunc('month', Transaction.datum))
+
+            transactions = query.all()
+
+            logging.info(f"Fetched {len(transactions)} transactions for child category: {child.name}")
+
+            # Convert results to list of dictionaries
+            monthly_sums = [{'month': transaction.month.strftime('%Y-%m'), 'total_amount': transaction.total_amount} for transaction in transactions]
+
+            results.append({
+                'category': child.name,
+                'monthly_sums': monthly_sums
+            })
+
+        return jsonify(results)
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error fetching UITGAVEN transaction sums: {e}")
+        raise e
+    finally:
+        session.close()
+
+def fetch_transactions_overview():
+    session = get_session()
+
+    try:
+        # Fetch all categories
+        categories = session.query(LabelCategory).all()
+
+        # Fetch all labels
+        labels = session.query(Label).all()
+
+        # Fetch all transactions and sum the total values per month per label
+        transactions = session.query(
+            TransactionLabel.label_id,
+            func.date_trunc('month', Transaction.datum).label('month'),
+            func.sum(Transaction.bedrag_eur).label('total_amount')
+        ).join(Transaction, Transaction.id == TransactionLabel.transaction_id) \
+         .group_by(TransactionLabel.label_id, func.date_trunc('month', Transaction.datum)).all()
+
+        # Create a dictionary to hold the categories
+        category_dict = {category.id: category for category in categories}
+
+        # Create a nested dictionary to represent the hierarchical structure
+        overview = []
+
+        def add_category_to_overview(category):
+            if category.parent_id is None:
+                if not any(cat['name'] == category.name for cat in overview):
+                    overview.append({
+                        'name': category.name,
+                        'id': category.id,
+                        'parent_id': category.parent_id,
+                        'labels': [],
+                        'subcategories': [],
+                        'transactions_total': 0,
+                        'monthly_total': {}
+                    })
+            else:
+                parent_category = category_dict.get(category.parent_id)
+                if parent_category:
+                    parent_name = parent_category.name
+                    parent_overview = find_category_in_overview(overview, parent_name)
+                    if parent_overview:
+                        parent_overview['subcategories'].append({
+                            'name': category.name,
+                            'id': category.id,
+                            'parent_id': category.parent_id,
+                            'labels': [],
+                            'subcategories': [],
+                            'transactions_total': 0,
+                            'monthly_total': {}
+                        })
+
+        def find_category_in_overview(overview, category_name):
+            for category in overview:
+                if category['name'] == category_name:
+                    return category
+                result = find_category_in_overview(category['subcategories'], category_name)
+                if result:
+                    return result
+            return None
+
+        def add_label_to_category(label, transactions_dict):
+            category = category_dict.get(label.category_id)
+            if category:
+                category_overview = find_category_in_overview(overview, category.name)
+                if category_overview:
+                    transactions_total = sum(transactions_dict.get(label.id, {}).values())
+                    category_overview['labels'].append({
+                        'name': label.name,
+                        'id': label.id,
+                        'transactions_monthly': transactions_dict.get(label.id, {}),
+                        'transactions_total': transactions_total
+                    })
+                    category_overview['transactions_total'] += transactions_total
+                    for month, amount in transactions_dict.get(label.id, {}).items():
+                        if month not in category_overview['monthly_total']:
+                            category_overview['monthly_total'][month] = 0
+                        category_overview['monthly_total'][month] += amount
+
+        def update_category_totals(category):
+            for subcategory in category['subcategories']:
+                update_category_totals(subcategory)
+                category['transactions_total'] += subcategory['transactions_total']
+                for month, amount in subcategory['monthly_total'].items():
+                    if month not in category['monthly_total']:
+                        category['monthly_total'][month] = 0
+                    category['monthly_total'][month] += amount
+
+        # Sum transactions per label
+        transactions_dict = {}
+        for transaction in transactions:
+            label_id = transaction.label_id
+            month = transaction.month.strftime('%Y-%m')
+            if label_id not in transactions_dict:
+                transactions_dict[label_id] = {}
+            if month not in transactions_dict[label_id]:
+                transactions_dict[label_id][month] = 0
+            transactions_dict[label_id][month] += transaction.total_amount
+
+        # Add all categories to the overview
+        for category in categories:
+            add_category_to_overview(category)
+
+        # Add all labels to the appropriate categories
+        for label in labels:
+            add_label_to_category(label, transactions_dict)
+
+        # Update transactions_total and monthly_total for each category
+        for category in overview:
+            update_category_totals(category)
+
+        return jsonify(overview)
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error in fetch_transactions_overview: {e}", exc_info=True)
         raise e
     finally:
         session.close()

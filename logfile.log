@@ -1,206 +1,100 @@
-Logging from pod postgres-6cb65c8bff-7zkbb in namespace default
+Logging from pod postgres-64d5fd7b85-l5dhr in namespace default
 
 PostgreSQL Database directory appears to contain a database; Skipping initialization
 
-2024-08-07 08:10:21.404 UTC [1] LOG:  starting PostgreSQL 16.3 (Debian 16.3-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
-2024-08-07 08:10:21.405 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
-2024-08-07 08:10:21.405 UTC [1] LOG:  listening on IPv6 address "::", port 5432
-2024-08-07 08:10:21.456 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
-2024-08-07 08:10:21.490 UTC [29] LOG:  database system was interrupted; last known up at 2024-08-06 20:14:59 UTC
-2024-08-07 08:10:23.156 UTC [29] LOG:  database system was not properly shut down; automatic recovery in progress
-2024-08-07 08:10:23.163 UTC [29] LOG:  redo starts at 0/1C97B20
-2024-08-07 08:10:23.163 UTC [29] LOG:  invalid record length at 0/1C97B58: expected at least 24, got 0
-2024-08-07 08:10:23.163 UTC [29] LOG:  redo done at 0/1C97B20 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
-2024-08-07 08:10:23.173 UTC [27] LOG:  checkpoint starting: end-of-recovery immediate wait
-2024-08-07 08:10:23.204 UTC [27] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=0.004 s, total=0.035 s; sync files=2, longest=0.003 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/1C97B58, redo lsn=0/1C97B58
-2024-08-07 08:10:23.214 UTC [1] LOG:  database system is ready to accept connections
-2024-08-08 11:56:25.358 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 11:56:27.289 UTC [27] LOG:  checkpoint complete: wrote 19 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.905 s, sync=0.009 s, total=1.932 s; sync files=6, longest=0.004 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/1C97ED8, redo lsn=0/1C97EA0
-2024-08-08 12:01:25.385 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:01:26.323 UTC [27] LOG:  checkpoint complete: wrote 10 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.906 s, sync=0.015 s, total=0.938 s; sync files=13, longest=0.004 s, average=0.002 s; distance=45 kB, estimate=45 kB; lsn=0/1CA3430, redo lsn=0/1CA33F8
-2024-08-08 12:06:25.355 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:06:27.699 UTC [27] LOG:  checkpoint complete: wrote 24 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.309 s, sync=0.016 s, total=2.345 s; sync files=24, longest=0.003 s, average=0.001 s; distance=133 kB, estimate=133 kB; lsn=0/1CC4B70, redo lsn=0/1CC4B38
-2024-08-08 12:16:25.895 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:16:31.061 UTC [27] LOG:  checkpoint complete: wrote 52 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.114 s, sync=0.033 s, total=5.166 s; sync files=54, longest=0.004 s, average=0.001 s; distance=285 kB, estimate=285 kB; lsn=0/1D0BF80, redo lsn=0/1D0BF48
-2024-08-08 12:21:18.662 UTC [728] ERROR:  duplicate key value violates unique constraint "pg_class_relname_nsp_index"
-2024-08-08 12:21:18.662 UTC [728] DETAIL:  Key (relname, relnamespace)=(transactions_id_seq, 2200) already exists.
-2024-08-08 12:21:18.662 UTC [728] STATEMENT:  
-	CREATE TABLE transactions (
-		id SERIAL NOT NULL, 
-		datum DATE NOT NULL, 
-		naam VARCHAR NOT NULL, 
-		rekening VARCHAR NOT NULL, 
-		tegen_rekening VARCHAR NOT NULL, 
-		code VARCHAR NOT NULL, 
-		af_bij VARCHAR NOT NULL, 
-		bedrag_eur FLOAT NOT NULL, 
-		mutatie_soort VARCHAR NOT NULL, 
-		mededelingen VARCHAR NOT NULL, 
-		company VARCHAR NOT NULL, 
-		PRIMARY KEY (id)
-	)
-	
-	
-2024-08-08 12:21:25.155 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:21:30.522 UTC [27] LOG:  checkpoint complete: wrote 54 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.317 s, sync=0.034 s, total=5.367 s; sync files=54, longest=0.004 s, average=0.001 s; distance=322 kB, estimate=322 kB; lsn=0/1D5C848, redo lsn=0/1D5C810
-2024-08-08 12:26:25.615 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:26:35.675 UTC [27] LOG:  checkpoint complete: wrote 101 buffers (0.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=10.023 s, sync=0.021 s, total=10.061 s; sync files=31, longest=0.005 s, average=0.001 s; distance=421 kB, estimate=421 kB; lsn=0/1DC5C48, redo lsn=0/1DC5C10
-2024-08-08 12:36:25.875 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:36:31.238 UTC [27] LOG:  checkpoint complete: wrote 54 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.314 s, sync=0.033 s, total=5.364 s; sync files=57, longest=0.004 s, average=0.001 s; distance=259 kB, estimate=404 kB; lsn=0/1E06BE8, redo lsn=0/1E06BB0
-2024-08-08 12:41:07.680 UTC [773] ERROR:  duplicate key value violates unique constraint "pg_class_relname_nsp_index"
-2024-08-08 12:41:07.680 UTC [773] DETAIL:  Key (relname, relnamespace)=(transactions_id_seq, 2200) already exists.
-2024-08-08 12:41:07.680 UTC [773] STATEMENT:  
-	CREATE TABLE transactions (
-		id SERIAL NOT NULL, 
-		datum DATE NOT NULL, 
-		naam VARCHAR NOT NULL, 
-		rekening VARCHAR NOT NULL, 
-		tegen_rekening VARCHAR NOT NULL, 
-		code VARCHAR NOT NULL, 
-		af_bij VARCHAR NOT NULL, 
-		bedrag_eur FLOAT NOT NULL, 
-		mutatie_soort VARCHAR NOT NULL, 
-		mededelingen VARCHAR NOT NULL, 
-		company VARCHAR NOT NULL, 
-		PRIMARY KEY (id)
-	)
-	
-	
-2024-08-08 12:41:25.336 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:41:33.609 UTC [27] LOG:  checkpoint complete: wrote 83 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.219 s, sync=0.037 s, total=8.273 s; sync files=64, longest=0.004 s, average=0.001 s; distance=421 kB, estimate=421 kB; lsn=0/1E702D0, redo lsn=0/1E70298
-2024-08-08 12:46:25.613 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:46:31.064 UTC [27] LOG:  checkpoint complete: wrote 55 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.415 s, sync=0.017 s, total=5.452 s; sync files=19, longest=0.004 s, average=0.001 s; distance=221 kB, estimate=401 kB; lsn=0/1EA7840, redo lsn=0/1EA7808
-2024-08-08 12:48:51.082 UTC [794] ERROR:  duplicate key value violates unique constraint "pg_class_relname_nsp_index"
-2024-08-08 12:48:51.082 UTC [794] DETAIL:  Key (relname, relnamespace)=(transactions_id_seq, 2200) already exists.
-2024-08-08 12:48:51.082 UTC [794] STATEMENT:  
-	CREATE TABLE transactions (
-		id SERIAL NOT NULL, 
-		datum DATE NOT NULL, 
-		naam VARCHAR NOT NULL, 
-		rekening VARCHAR NOT NULL, 
-		tegen_rekening VARCHAR NOT NULL, 
-		code VARCHAR NOT NULL, 
-		af_bij VARCHAR NOT NULL, 
-		bedrag_eur FLOAT NOT NULL, 
-		mutatie_soort VARCHAR NOT NULL, 
-		mededelingen VARCHAR NOT NULL, 
-		company VARCHAR NOT NULL, 
-		PRIMARY KEY (id)
-	)
-	
-	
-2024-08-08 12:51:25.158 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:51:34.134 UTC [27] LOG:  checkpoint complete: wrote 90 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.922 s, sync=0.038 s, total=8.976 s; sync files=68, longest=0.005 s, average=0.001 s; distance=443 kB, estimate=443 kB; lsn=0/1F164F0, redo lsn=0/1F164B8
-2024-08-08 18:48:09.081 UTC [1316] ERROR:  column "parent_id" of relation "label_categories" does not exist at character 37
-2024-08-08 18:48:09.081 UTC [1316] STATEMENT:  INSERT INTO label_categories (name, parent_id) VALUES ('INKOMSTEN', NULL) ON CONFLICT (name) DO NOTHING RETURNING label_categories.id
-2024-08-08 18:48:09.117 UTC [1318] ERROR:  column "parent_id" of relation "label_categories" does not exist at character 37
-2024-08-08 18:48:09.117 UTC [1318] STATEMENT:  INSERT INTO label_categories (name, parent_id) VALUES ('INKOMSTEN', NULL) ON CONFLICT (name) DO NOTHING RETURNING label_categories.id
-2024-08-08 18:51:15.052 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 18:51:23.218 UTC [27] LOG:  checkpoint complete: wrote 82 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.120 s, sync=0.031 s, total=8.167 s; sync files=57, longest=0.004 s, average=0.001 s; distance=364 kB, estimate=435 kB; lsn=0/1F71530, redo lsn=0/1F714C0
-2024-08-08 18:56:15.312 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 18:56:20.157 UTC [27] LOG:  checkpoint complete: wrote 49 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.813 s, sync=0.016 s, total=4.845 s; sync files=22, longest=0.005 s, average=0.001 s; distance=279 kB, estimate=419 kB; lsn=0/1FB7180, redo lsn=0/1FB7148
-Logging from container postgres in pod postgres-6cb65c8bff-7zkbb in namespace default
+2024-12-16 09:27:24.240 UTC [1] LOG:  starting PostgreSQL 16.4 (Debian 16.4-1.pgdg120+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
+2024-12-16 09:27:24.241 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2024-12-16 09:27:24.241 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2024-12-16 09:27:24.281 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2024-12-16 09:27:24.333 UTC [29] LOG:  database system was interrupted; last known up at 2024-12-16 08:02:01 UTC
+2024-12-16 09:27:27.250 UTC [29] LOG:  database system was not properly shut down; automatic recovery in progress
+2024-12-16 09:27:27.266 UTC [29] LOG:  redo starts at 0/2384FA0
+2024-12-16 09:27:27.267 UTC [29] LOG:  invalid record length at 0/2384FD8: expected at least 24, got 0
+2024-12-16 09:27:27.267 UTC [29] LOG:  redo done at 0/2384FA0 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2024-12-16 09:27:27.285 UTC [27] LOG:  checkpoint starting: end-of-recovery immediate wait
+2024-12-16 09:27:27.353 UTC [27] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.011 s, sync=0.006 s, total=0.080 s; sync files=2, longest=0.004 s, average=0.003 s; distance=0 kB, estimate=0 kB; lsn=0/2384FD8, redo lsn=0/2384FD8
+2024-12-16 09:27:27.376 UTC [1] LOG:  database system is ready to accept connections
+Logging from container postgres in pod postgres-64d5fd7b85-l5dhr in namespace default
 
 PostgreSQL Database directory appears to contain a database; Skipping initialization
 
-2024-08-07 08:10:21.404 UTC [1] LOG:  starting PostgreSQL 16.3 (Debian 16.3-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
-2024-08-07 08:10:21.405 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
-2024-08-07 08:10:21.405 UTC [1] LOG:  listening on IPv6 address "::", port 5432
-2024-08-07 08:10:21.456 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
-2024-08-07 08:10:21.490 UTC [29] LOG:  database system was interrupted; last known up at 2024-08-06 20:14:59 UTC
-2024-08-07 08:10:23.156 UTC [29] LOG:  database system was not properly shut down; automatic recovery in progress
-2024-08-07 08:10:23.163 UTC [29] LOG:  redo starts at 0/1C97B20
-2024-08-07 08:10:23.163 UTC [29] LOG:  invalid record length at 0/1C97B58: expected at least 24, got 0
-2024-08-07 08:10:23.163 UTC [29] LOG:  redo done at 0/1C97B20 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
-2024-08-07 08:10:23.173 UTC [27] LOG:  checkpoint starting: end-of-recovery immediate wait
-2024-08-07 08:10:23.204 UTC [27] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=0.004 s, total=0.035 s; sync files=2, longest=0.003 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/1C97B58, redo lsn=0/1C97B58
-2024-08-07 08:10:23.214 UTC [1] LOG:  database system is ready to accept connections
-2024-08-08 11:56:25.358 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 11:56:27.289 UTC [27] LOG:  checkpoint complete: wrote 19 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.905 s, sync=0.009 s, total=1.932 s; sync files=6, longest=0.004 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/1C97ED8, redo lsn=0/1C97EA0
-2024-08-08 12:01:25.385 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:01:26.323 UTC [27] LOG:  checkpoint complete: wrote 10 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.906 s, sync=0.015 s, total=0.938 s; sync files=13, longest=0.004 s, average=0.002 s; distance=45 kB, estimate=45 kB; lsn=0/1CA3430, redo lsn=0/1CA33F8
-2024-08-08 12:06:25.355 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:06:27.699 UTC [27] LOG:  checkpoint complete: wrote 24 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.309 s, sync=0.016 s, total=2.345 s; sync files=24, longest=0.003 s, average=0.001 s; distance=133 kB, estimate=133 kB; lsn=0/1CC4B70, redo lsn=0/1CC4B38
-2024-08-08 12:16:25.895 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:16:31.061 UTC [27] LOG:  checkpoint complete: wrote 52 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.114 s, sync=0.033 s, total=5.166 s; sync files=54, longest=0.004 s, average=0.001 s; distance=285 kB, estimate=285 kB; lsn=0/1D0BF80, redo lsn=0/1D0BF48
-2024-08-08 12:21:18.662 UTC [728] ERROR:  duplicate key value violates unique constraint "pg_class_relname_nsp_index"
-2024-08-08 12:21:18.662 UTC [728] DETAIL:  Key (relname, relnamespace)=(transactions_id_seq, 2200) already exists.
-2024-08-08 12:21:18.662 UTC [728] STATEMENT:  
-	CREATE TABLE transactions (
-		id SERIAL NOT NULL, 
-		datum DATE NOT NULL, 
-		naam VARCHAR NOT NULL, 
-		rekening VARCHAR NOT NULL, 
-		tegen_rekening VARCHAR NOT NULL, 
-		code VARCHAR NOT NULL, 
-		af_bij VARCHAR NOT NULL, 
-		bedrag_eur FLOAT NOT NULL, 
-		mutatie_soort VARCHAR NOT NULL, 
-		mededelingen VARCHAR NOT NULL, 
-		company VARCHAR NOT NULL, 
-		PRIMARY KEY (id)
-	)
-	
-	
-2024-08-08 12:21:25.155 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:21:30.522 UTC [27] LOG:  checkpoint complete: wrote 54 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.317 s, sync=0.034 s, total=5.367 s; sync files=54, longest=0.004 s, average=0.001 s; distance=322 kB, estimate=322 kB; lsn=0/1D5C848, redo lsn=0/1D5C810
-2024-08-08 12:26:25.615 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:26:35.675 UTC [27] LOG:  checkpoint complete: wrote 101 buffers (0.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=10.023 s, sync=0.021 s, total=10.061 s; sync files=31, longest=0.005 s, average=0.001 s; distance=421 kB, estimate=421 kB; lsn=0/1DC5C48, redo lsn=0/1DC5C10
-2024-08-08 12:36:25.875 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:36:31.238 UTC [27] LOG:  checkpoint complete: wrote 54 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.314 s, sync=0.033 s, total=5.364 s; sync files=57, longest=0.004 s, average=0.001 s; distance=259 kB, estimate=404 kB; lsn=0/1E06BE8, redo lsn=0/1E06BB0
-2024-08-08 12:41:07.680 UTC [773] ERROR:  duplicate key value violates unique constraint "pg_class_relname_nsp_index"
-2024-08-08 12:41:07.680 UTC [773] DETAIL:  Key (relname, relnamespace)=(transactions_id_seq, 2200) already exists.
-2024-08-08 12:41:07.680 UTC [773] STATEMENT:  
-	CREATE TABLE transactions (
-		id SERIAL NOT NULL, 
-		datum DATE NOT NULL, 
-		naam VARCHAR NOT NULL, 
-		rekening VARCHAR NOT NULL, 
-		tegen_rekening VARCHAR NOT NULL, 
-		code VARCHAR NOT NULL, 
-		af_bij VARCHAR NOT NULL, 
-		bedrag_eur FLOAT NOT NULL, 
-		mutatie_soort VARCHAR NOT NULL, 
-		mededelingen VARCHAR NOT NULL, 
-		company VARCHAR NOT NULL, 
-		PRIMARY KEY (id)
-	)
-	
-	
-2024-08-08 12:41:25.336 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:41:33.609 UTC [27] LOG:  checkpoint complete: wrote 83 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.219 s, sync=0.037 s, total=8.273 s; sync files=64, longest=0.004 s, average=0.001 s; distance=421 kB, estimate=421 kB; lsn=0/1E702D0, redo lsn=0/1E70298
-2024-08-08 12:46:25.613 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:46:31.064 UTC [27] LOG:  checkpoint complete: wrote 55 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=5.415 s, sync=0.017 s, total=5.452 s; sync files=19, longest=0.004 s, average=0.001 s; distance=221 kB, estimate=401 kB; lsn=0/1EA7840, redo lsn=0/1EA7808
-2024-08-08 12:48:51.082 UTC [794] ERROR:  duplicate key value violates unique constraint "pg_class_relname_nsp_index"
-2024-08-08 12:48:51.082 UTC [794] DETAIL:  Key (relname, relnamespace)=(transactions_id_seq, 2200) already exists.
-2024-08-08 12:48:51.082 UTC [794] STATEMENT:  
-	CREATE TABLE transactions (
-		id SERIAL NOT NULL, 
-		datum DATE NOT NULL, 
-		naam VARCHAR NOT NULL, 
-		rekening VARCHAR NOT NULL, 
-		tegen_rekening VARCHAR NOT NULL, 
-		code VARCHAR NOT NULL, 
-		af_bij VARCHAR NOT NULL, 
-		bedrag_eur FLOAT NOT NULL, 
-		mutatie_soort VARCHAR NOT NULL, 
-		mededelingen VARCHAR NOT NULL, 
-		company VARCHAR NOT NULL, 
-		PRIMARY KEY (id)
-	)
-	
-	
-2024-08-08 12:51:25.158 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 12:51:34.134 UTC [27] LOG:  checkpoint complete: wrote 90 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.922 s, sync=0.038 s, total=8.976 s; sync files=68, longest=0.005 s, average=0.001 s; distance=443 kB, estimate=443 kB; lsn=0/1F164F0, redo lsn=0/1F164B8
-2024-08-08 18:48:09.081 UTC [1316] ERROR:  column "parent_id" of relation "label_categories" does not exist at character 37
-2024-08-08 18:48:09.081 UTC [1316] STATEMENT:  INSERT INTO label_categories (name, parent_id) VALUES ('INKOMSTEN', NULL) ON CONFLICT (name) DO NOTHING RETURNING label_categories.id
-2024-08-08 18:48:09.117 UTC [1318] ERROR:  column "parent_id" of relation "label_categories" does not exist at character 37
-2024-08-08 18:48:09.117 UTC [1318] STATEMENT:  INSERT INTO label_categories (name, parent_id) VALUES ('INKOMSTEN', NULL) ON CONFLICT (name) DO NOTHING RETURNING label_categories.id
-2024-08-08 18:51:15.052 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 18:51:23.218 UTC [27] LOG:  checkpoint complete: wrote 82 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.120 s, sync=0.031 s, total=8.167 s; sync files=57, longest=0.004 s, average=0.001 s; distance=364 kB, estimate=435 kB; lsn=0/1F71530, redo lsn=0/1F714C0
-2024-08-08 18:56:15.312 UTC [27] LOG:  checkpoint starting: time
-2024-08-08 18:56:20.157 UTC [27] LOG:  checkpoint complete: wrote 49 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.813 s, sync=0.016 s, total=4.845 s; sync files=22, longest=0.005 s, average=0.001 s; distance=279 kB, estimate=419 kB; lsn=0/1FB7180, redo lsn=0/1FB7148
-Logging from pod frontend-deployment-59cfb65b7-sczfq in namespace default
+2024-12-16 09:27:24.240 UTC [1] LOG:  starting PostgreSQL 16.4 (Debian 16.4-1.pgdg120+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit
+2024-12-16 09:27:24.241 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2024-12-16 09:27:24.241 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2024-12-16 09:27:24.281 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2024-12-16 09:27:24.333 UTC [29] LOG:  database system was interrupted; last known up at 2024-12-16 08:02:01 UTC
+2024-12-16 09:27:27.250 UTC [29] LOG:  database system was not properly shut down; automatic recovery in progress
+2024-12-16 09:27:27.266 UTC [29] LOG:  redo starts at 0/2384FA0
+2024-12-16 09:27:27.267 UTC [29] LOG:  invalid record length at 0/2384FD8: expected at least 24, got 0
+2024-12-16 09:27:27.267 UTC [29] LOG:  redo done at 0/2384FA0 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2024-12-16 09:27:27.285 UTC [27] LOG:  checkpoint starting: end-of-recovery immediate wait
+2024-12-16 09:27:27.353 UTC [27] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.011 s, sync=0.006 s, total=0.080 s; sync files=2, longest=0.004 s, average=0.003 s; distance=0 kB, estimate=0 kB; lsn=0/2384FD8, redo lsn=0/2384FD8
+2024-12-16 09:27:27.376 UTC [1] LOG:  database system is ready to accept connections
+Logging from pod backend-deployment-787d99bf76-2tz2q in namespace default
+INFO:root:Database session created successfully.
+INFO:root:Labels already exist.
+ * Serving Flask app 'run.py'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.42.0.200:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+Logging from container backend in pod backend-deployment-787d99bf76-2tz2q in namespace default
+INFO:root:Database session created successfully.
+INFO:root:Labels already exist.
+ * Serving Flask app 'run.py'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.42.0.200:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+Logging from pod backend-deployment-787d99bf76-5h6sx in namespace default
+INFO:root:Database session created successfully.
+INFO:root:Labels already exist.
+ * Serving Flask app 'run.py'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.42.0.199:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.202 - - [16/Dec/2024 09:47:51] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.202 - - [16/Dec/2024 09:47:52] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.202 - - [16/Dec/2024 09:47:52] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.205 - - [16/Dec/2024 09:50:51] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+Logging from container backend in pod backend-deployment-787d99bf76-5h6sx in namespace default
+INFO:root:Database session created successfully.
+INFO:root:Labels already exist.
+ * Serving Flask app 'run.py'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.42.0.199:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.202 - - [16/Dec/2024 09:47:51] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.202 - - [16/Dec/2024 09:47:52] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.202 - - [16/Dec/2024 09:47:52] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.205 - - [16/Dec/2024 09:50:51] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+Logging from pod frontend-deployment-59cfb65b7-gg7tm in namespace default
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
@@ -210,13 +104,10 @@ Logging from pod frontend-deployment-59cfb65b7-sczfq in namespace default
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
 /docker-entrypoint.sh: Configuration complete; ready for start up
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /labels HTTP/1.1" 200 584 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /static/js/main.fab33d44.js HTTP/1.1" 200 808643 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /static/js/main.fab33d44.js.map HTTP/1.1" 200 3780992 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /api/getlabels HTTP/1.1" 200 1039 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /favicon.ico HTTP/1.1" 200 3870 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:58 +0000] "POST /api/update_label_order HTTP/1.1" 500 21 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-Logging from container frontend in pod frontend-deployment-59cfb65b7-sczfq in namespace default
+10.42.0.1 - - [16/Dec/2024:09:50:51 +0000] "GET /api/fetch-transactions-overview HTTP/1.1" 500 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+10.42.0.1 - - [16/Dec/2024:09:50:55 +0000] "GET /api/fetch-transactions-overview HTTP/1.1" 500 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+10.42.0.1 - - [16/Dec/2024:09:50:56 +0000] "GET /api/fetch-transactions-overview HTTP/1.1" 500 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+Logging from container frontend in pod frontend-deployment-59cfb65b7-gg7tm in namespace default
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
@@ -226,13 +117,10 @@ Logging from container frontend in pod frontend-deployment-59cfb65b7-sczfq in na
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
 /docker-entrypoint.sh: Configuration complete; ready for start up
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /labels HTTP/1.1" 200 584 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /static/js/main.fab33d44.js HTTP/1.1" 200 808643 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /static/js/main.fab33d44.js.map HTTP/1.1" 200 3780992 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /api/getlabels HTTP/1.1" 200 1039 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:51 +0000] "GET /favicon.ico HTTP/1.1" 200 3870 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-10.42.0.1 - - [08/Aug/2024:19:11:58 +0000] "POST /api/update_label_order HTTP/1.1" 500 21 "http://172.21.127.147:30000/labels" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-Logging from pod frontend-deployment-59cfb65b7-j9lnz in namespace default
+10.42.0.1 - - [16/Dec/2024:09:50:51 +0000] "GET /api/fetch-transactions-overview HTTP/1.1" 500 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+10.42.0.1 - - [16/Dec/2024:09:50:55 +0000] "GET /api/fetch-transactions-overview HTTP/1.1" 500 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+10.42.0.1 - - [16/Dec/2024:09:50:56 +0000] "GET /api/fetch-transactions-overview HTTP/1.1" 500 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+Logging from pod frontend-deployment-59cfb65b7-j8clb in namespace default
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
@@ -242,7 +130,7 @@ Logging from pod frontend-deployment-59cfb65b7-j9lnz in namespace default
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
 /docker-entrypoint.sh: Configuration complete; ready for start up
-Logging from container frontend in pod frontend-deployment-59cfb65b7-j9lnz in namespace default
+Logging from container frontend in pod frontend-deployment-59cfb65b7-j8clb in namespace default
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
@@ -252,7 +140,7 @@ Logging from container frontend in pod frontend-deployment-59cfb65b7-j9lnz in na
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
 /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
 /docker-entrypoint.sh: Configuration complete; ready for start up
-Logging from pod backend-deployment-787d99bf76-2jkwp in namespace default
+Logging from pod backend-deployment-787d99bf76-b98vf in namespace default
 INFO:root:Database session created successfully.
 INFO:root:Labels already exist.
  * Serving Flask app 'run.py'
@@ -260,9 +148,22 @@ INFO:root:Labels already exist.
 INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://10.42.0.79:5000
+ * Running on http://10.42.0.203:5000
 INFO:werkzeug:[33mPress CTRL+C to quit[0m
-Logging from container backend in pod backend-deployment-787d99bf76-2jkwp in namespace default
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+Traceback (most recent call last):
+  File "/app/app/db.py", line 803, in fetch_transactions_overview
+    add_category_to_overview(category)
+  File "/app/app/db.py", line 777, in add_category_to_overview
+    parent_overview = find_category_in_overview(overview, parent_name)
+  File "/app/app/db.py", line 791, in find_category_in_overview
+    result = find_category_in_overview(subcategory['subcategories'], category_name)
+  File "/app/app/db.py", line 789, in find_category_in_overview
+    for subcategory in overview.values():
+AttributeError: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.205 - - [16/Dec/2024 09:50:55] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+Logging from container backend in pod backend-deployment-787d99bf76-b98vf in namespace default
 INFO:root:Database session created successfully.
 INFO:root:Labels already exist.
  * Serving Flask app 'run.py'
@@ -270,9 +171,22 @@ INFO:root:Labels already exist.
 INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://10.42.0.79:5000
+ * Running on http://10.42.0.203:5000
 INFO:werkzeug:[33mPress CTRL+C to quit[0m
-Logging from pod backend-deployment-787d99bf76-wmkpm in namespace default
+INFO:root:Database session created successfully.
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+Traceback (most recent call last):
+  File "/app/app/db.py", line 803, in fetch_transactions_overview
+    add_category_to_overview(category)
+  File "/app/app/db.py", line 777, in add_category_to_overview
+    parent_overview = find_category_in_overview(overview, parent_name)
+  File "/app/app/db.py", line 791, in find_category_in_overview
+    result = find_category_in_overview(subcategory['subcategories'], category_name)
+  File "/app/app/db.py", line 789, in find_category_in_overview
+    for subcategory in overview.values():
+AttributeError: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.205 - - [16/Dec/2024 09:50:55] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+Logging from pod backend-deployment-787d99bf76-2pswc in namespace default
 INFO:root:Database session created successfully.
 INFO:root:Labels already exist.
  * Serving Flask app 'run.py'
@@ -280,15 +194,22 @@ INFO:root:Labels already exist.
 INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://10.42.0.78:5000
+ * Running on http://10.42.0.204:5000
 INFO:werkzeug:[33mPress CTRL+C to quit[0m
 INFO:root:Database session created successfully.
-INFO:werkzeug:10.42.0.80 - - [08/Aug/2024 19:11:51] "GET /api/getlabels HTTP/1.0" 200 -
-INFO:root:Database session created successfully.
-ERROR:root:Error updating label order: 'labels'
-ERROR:root:Error in /api/update_label_order: 'labels'
-INFO:werkzeug:10.42.0.80 - - [08/Aug/2024 19:11:58] "[35m[1mPOST /api/update_label_order HTTP/1.0[0m" 500 -
-Logging from container backend in pod backend-deployment-787d99bf76-wmkpm in namespace default
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+Traceback (most recent call last):
+  File "/app/app/db.py", line 803, in fetch_transactions_overview
+    add_category_to_overview(category)
+  File "/app/app/db.py", line 777, in add_category_to_overview
+    parent_overview = find_category_in_overview(overview, parent_name)
+  File "/app/app/db.py", line 791, in find_category_in_overview
+    result = find_category_in_overview(subcategory['subcategories'], category_name)
+  File "/app/app/db.py", line 789, in find_category_in_overview
+    for subcategory in overview.values():
+AttributeError: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.205 - - [16/Dec/2024 09:50:56] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -
+Logging from container backend in pod backend-deployment-787d99bf76-2pswc in namespace default
 INFO:root:Database session created successfully.
 INFO:root:Labels already exist.
  * Serving Flask app 'run.py'
@@ -296,11 +217,18 @@ INFO:root:Labels already exist.
 INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:5000
- * Running on http://10.42.0.78:5000
+ * Running on http://10.42.0.204:5000
 INFO:werkzeug:[33mPress CTRL+C to quit[0m
 INFO:root:Database session created successfully.
-INFO:werkzeug:10.42.0.80 - - [08/Aug/2024 19:11:51] "GET /api/getlabels HTTP/1.0" 200 -
-INFO:root:Database session created successfully.
-ERROR:root:Error updating label order: 'labels'
-ERROR:root:Error in /api/update_label_order: 'labels'
-INFO:werkzeug:10.42.0.80 - - [08/Aug/2024 19:11:58] "[35m[1mPOST /api/update_label_order HTTP/1.0[0m" 500 -
+ERROR:root:Error in fetch_transactions_overview: 'list' object has no attribute 'values'
+Traceback (most recent call last):
+  File "/app/app/db.py", line 803, in fetch_transactions_overview
+    add_category_to_overview(category)
+  File "/app/app/db.py", line 777, in add_category_to_overview
+    parent_overview = find_category_in_overview(overview, parent_name)
+  File "/app/app/db.py", line 791, in find_category_in_overview
+    result = find_category_in_overview(subcategory['subcategories'], category_name)
+  File "/app/app/db.py", line 789, in find_category_in_overview
+    for subcategory in overview.values():
+AttributeError: 'list' object has no attribute 'values'
+INFO:werkzeug:10.42.0.205 - - [16/Dec/2024 09:50:56] "[35m[1mGET /api/fetch-transactions-overview HTTP/1.0[0m" 500 -

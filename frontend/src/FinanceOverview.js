@@ -179,63 +179,59 @@ const FinanceOverview = () => {
     );
   };
 
-  // Render UITGAVEN tables
-  const renderUitgavenTables = () => {
-    return uitgavenCategories.map(category => (
-      <React.Fragment key={category.id}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3 }}>
-          {category.name}
-        </Typography>
-        <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-          <Table size="small" aria-label={category.name}>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: 'rgb(25, 118, 210)' }}>
-                <TableCell sx={{ color: 'white', paddingLeft: '10px' }}></TableCell>
-                {data.labels.map((monthLabel, index) => (
-                  <TableCell key={index} sx={{ color: 'white' }} align="right">
-                    {monthLabel}
-                  </TableCell>
-                ))}
-                <TableCell sx={{ color: 'white', paddingRight: '10px' }} align="right">
-                  Totaal
+ // Render UITGAVEN tables
+const renderUitgavenTables = () => {
+  return uitgavenCategories.map(category => (
+    <React.Fragment key={category.id}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3 }}>
+        {category.name}
+      </Typography>
+      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+        <Table size="small" aria-label={category.name}>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: 'rgb(25, 118, 210)' }}>
+              <TableCell sx={{ color: 'white', paddingLeft: '10px' }}></TableCell>
+              {data.labels.map((monthLabel, index) => (
+                <TableCell key={index} sx={{ color: 'white' }} align="right">
+                  {monthLabel}
+                </TableCell>
+              ))}
+              <TableCell sx={{ color: 'white', paddingRight: '10px' }} align="right">
+                Totaal
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {category.labels && category.labels.length > 0 && category.labels.map(label => (
+              <TableRow key={label.id}>
+                <TableCell sx={{ paddingLeft: '30px' }}>{label.name}</TableCell>
+                {data.labels.map((monthLabel, monthIndex) => {
+                  const convertedMonthLabel = convertMonthLabel(monthLabel);
+                  const sum = transactionSums.find(
+                    sum => sum.label === label.name && sum.year_month === convertedMonthLabel
+                  );
+                  return (
+                    <TableCell key={monthIndex} align="right">
+                      €{sum ? parseFloat(sum.bedrag_eur).toFixed(2) : '0.00'}
+                    </TableCell>
+                  );
+                })}
+                <TableCell align="right">
+                  €{transactionSums
+                    .filter(sum => sum.label === label.name)
+                    .reduce((total, item) => total + parseFloat(item.bedrag_eur), 0)
+                    .toFixed(2)}
                 </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {category.children.length > 0 ? (
-                category.children.map(subcategory => (
-                  <React.Fragment key={subcategory.id}>
-                    <TableRow>
-                      <TableCell colSpan={data.labels.length + 2} sx={{ fontWeight: 'bold', paddingLeft: '10px' }}>
-                        {subcategory.name}
-                      </TableCell>
-                    </TableRow>
-                    {subcategory.labels.map(label => (
-                      <TableRow key={label.id}>
-                        <TableCell sx={{ paddingLeft: '30px' }}>{label.name}</TableCell>
-                        {data.labels.map((monthLabel, monthIndex) => {
-                          const convertedMonthLabel = convertMonthLabel(monthLabel);
-                          const sum = transactionSums.find(
-                            sum => sum.label === label.name && sum.year_month === convertedMonthLabel
-                          );
-                          return (
-                            <TableCell key={monthIndex} align="right">
-                              €{sum ? parseFloat(sum.bedrag_eur).toFixed(2) : '0.00'}
-                            </TableCell>
-                          );
-                        })}
-                        <TableCell align="right">
-                          €{transactionSums
-                            .filter(sum => sum.label === label.name)
-                            .reduce((total, item) => total + parseFloat(item.bedrag_eur), 0)
-                            .toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </React.Fragment>
-                ))
-              ) : (
-                category.labels.map(label => (
+            ))}
+            {category.children.length > 0 && category.children.map(subcategory => (
+              <React.Fragment key={subcategory.id}>
+                <TableRow>
+                  <TableCell colSpan={data.labels.length + 2} sx={{ fontWeight: 'bold', paddingLeft: '10px' }}>
+                    {subcategory.name}
+                  </TableCell>
+                </TableRow>
+                {subcategory.labels.map(label => (
                   <TableRow key={label.id}>
                     <TableCell sx={{ paddingLeft: '30px' }}>{label.name}</TableCell>
                     {data.labels.map((monthLabel, monthIndex) => {
@@ -256,15 +252,15 @@ const FinanceOverview = () => {
                         .toFixed(2)}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </React.Fragment>
-    ));
-  };
-
+                ))}
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </React.Fragment>
+  ));
+};
   return (
     <Container>
       {/* Main Finance Table */}

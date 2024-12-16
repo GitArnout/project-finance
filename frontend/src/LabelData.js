@@ -12,8 +12,17 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
+  IconButton,
+  Collapse,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 
 const LabelData = () => {
   const [years, setYears] = useState([]);
@@ -151,82 +160,95 @@ const LabelData = () => {
     handleLabelUpdate(transactionId, suggestedLabel);
   };
 
-  const columns = [
-    { field: 'datum', headerName: 'Date', width: 150 },
-    {
-      field: 'company',
-      headerName: 'Company',
-      width: 300,
-    },
-    {
-      field: 'bedrag_eur',
-      headerName: 'Amount (€)',
-      width: 80,
-      renderCell: params => {
-        if (params.row.af_bij) {
-          return params.row.af_bij === 'Af' ? `-${params.row.bedrag_eur}` : params.row.bedrag_eur;
-        }
-        return params.row.bedrag_eur;
-      },
-    },
-    {
-      field: 'label',
-      headerName: 'Label',
-      width: 275,
-      renderCell: (params) => (
-        <FormControl variant="outlined" sx={{ minWidth: 250, width: 250 }}>
-          <Select
-            size="small"
-            value={params.row.label || ''}
-            displayEmpty
-            onChange={(e) => handleLabelUpdate(params.row.id, e.target.value)}
-            renderValue={(selected) => {
-              if (!selected) {
-                return <em>Selecteer label voor transactie</em>;
-              }
-              return selected;
-            }}
-            inputProps={{ style: { fontSize: '14px' } }}
-            sx={{ fontSize: '14px' }}
-          >
-            <MenuItem disabled value="" sx={{ fontSize: 14 }}>
-              <em>Selecteer label voor transactie</em>
-            </MenuItem>
-            {labels.map((label) => (
-              <MenuItem key={label.name} value={label.name} sx={{ fontSize: 14 }}>
-                {label.category} &gt; {label.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      ),
-    },
-    {
-      field: 'suggested_label',
-      headerName: 'Suggested Label',
-      width: 225,
-      renderCell: params => (
-        <>
-          {params.row.suggested_label} ({Math.round(params.row.label_probability * 100)}%)
-        </>
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 80,
-      renderCell: params => (
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          onClick={() => handleApplySuggestedLabel(params.row.id, params.row.suggested_label)}
-        >
-          Apply
-        </Button>
-      ),
-    },
-  ];
+  const Row = ({ transaction }) => {
+    const [open, setOpen] = useState(false);
+
+    return (
+      <React.Fragment>
+        <TableRow>
+          <TableCell>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            </IconButton>
+          </TableCell>
+          <TableCell align="right">{transaction.datum}</TableCell>
+          <TableCell align="right">{transaction.company}</TableCell>
+          <TableCell align="right">€{parseFloat(transaction.bedrag_eur).toFixed(2)}</TableCell>
+          <TableCell align="right">
+            <FormControl variant="outlined" sx={{ minWidth: 250, width: 250 }}>
+              <Select
+                size="small"
+                value={transaction.label || ''}
+                displayEmpty
+                onChange={(e) => handleLabelUpdate(transaction.id, e.target.value)}
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return <em>Selecteer label voor transactie</em>;
+                  }
+                  return selected;
+                }}
+                inputProps={{ style: { fontSize: '14px' } }}
+                sx={{ fontSize: '14px' }}
+              >
+                <MenuItem disabled value="" sx={{ fontSize: 14 }}>
+                  <em>Selecteer label voor transactie</em>
+                </MenuItem>
+                {labels.map((label) => (
+                  <MenuItem key={label.name} value={label.name} sx={{ fontSize: 14 }}>
+                    {label.category} &gt; {label.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </TableCell>
+          <TableCell align="right">
+            {transaction.suggested_label} ({Math.round(transaction.label_probability * 100)}%)
+          </TableCell>
+          <TableCell align="right">
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={() => handleApplySuggestedLabel(transaction.id, transaction.suggested_label)}
+            >
+              Apply
+            </Button>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box margin={1}>
+                {/* Content to be defined later */}
+                <Typography variant="h6" gutterBottom component="div">
+                  Transaction Details
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Beschrijving:</strong> {transaction.company}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Mutatiesoort:</strong> {transaction.mutatiesoort}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Mededelingen:</strong> {transaction.mededelingen}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Label:</strong> {transaction.label}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Transaction ID:</strong> {transaction.id}
+                </Typography>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </React.Fragment>
+    );
+  };
 
   return (
     <Container>
@@ -275,9 +297,26 @@ const LabelData = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <Box height={600} width="100%">
-          <DataGrid rows={transactions} columns={columns} pageSize={20} getRowId={row => row.id} rowHeight={40} />
-        </Box>
+        <TableContainer component={Paper}>
+          <Table size="small" aria-label="transactions table">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: 'rgb(25, 118, 210)' }}>
+                <TableCell sx={{ color: 'white', paddingLeft: '10px' }}></TableCell>
+                <TableCell sx={{ color: 'white' }} align="right">Date</TableCell>
+                <TableCell sx={{ color: 'white' }} align="right">Company</TableCell>
+                <TableCell sx={{ color: 'white' }} align="right">Amount (€)</TableCell>
+                <TableCell sx={{ color: 'white' }} align="right">Label</TableCell>
+                <TableCell sx={{ color: 'white' }} align="right">Suggested Label</TableCell>
+                <TableCell sx={{ color: 'white' }} align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {transactions.map(transaction => (
+                <Row key={transaction.id} transaction={transaction} />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
       <Snackbar open={Boolean(updateMessage)} autoHideDuration={6000} onClose={() => setUpdateMessage('')}>
         <Alert onClose={() => setUpdateMessage('')} severity="success">

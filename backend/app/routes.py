@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request, current_app
 from dotenv import load_dotenv
-from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db, fetch_transaction_sums_per_label_per_month
+from .db import fetch_transactions, fetch_chart_data, load_csv_data, get_ordered_labels_as_dataframe, fetch_all_transactions, update_transaction_label, fetch_transactions_by_label_and_month, update_label_order, add_category_to_db, add_label_to_db, fetch_transaction_sums_per_label_per_month, get_reserveringsuitgaven_sum_per_month, get_expenses_per_main_category, fetch_transactions_overview
 import logging
 
 
@@ -23,10 +23,6 @@ def get_transactions():
         return jsonify(transactions)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@bp.route('/api/hello', methods=['GET'])
-def example_route():
-    return jsonify({"message": "Hello, World!"}), 200
 
 @bp.route('/api/dbinfo', methods=['GET'])
 def db_info():
@@ -230,6 +226,35 @@ def get_transaction_sums():
         return transaction_sums
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/getsavings', methods=['GET'])
+def get_savings():
+    try:
+        savings_transations = get_reserveringsuitgaven_sum_per_month();
+        return savings_transations
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/get-expenses-category', methods=['GET'])
+def get_expenses_per_main_category():
+    try:
+        expenses_per_main_category = get_expenses_per_main_category()
+        return expenses_per_main_category
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/fetch-transactions-overview', methods=['GET'])
+def fetch_transactions_overview_route():
+    try:
+        transactions_overview = fetch_transactions_overview()
+        return transactions_overview
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@bp.route('/api/hello', methods=['GET'])
+def say_hello():
+    return jsonify({"message": "Hello, World!"})
 
 """ @bp.route('/api/train-model', methods=['POST'])
 def train_model():
