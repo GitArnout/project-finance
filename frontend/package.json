@@ -20,17 +20,14 @@
     "@mui/x-data-grid": "^7.18.0",
     "@nosferatu500/react-sortable-tree": "^4.4.0",
     "axios": "^1.7.2",
-    "chart.js": "^4.4.3",
     "customize-cra": "^1.0.0",
     "react": "^18.3.1",
     "react-app-rewired": "^2.2.1",
-    "react-beautiful-dnd": "^13.1.1",
     "react-dnd": "^14.0.4",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1",
-    "react-scripts": "^5.0.1",
-    "yarn": "^1.22.22"
+    "react-scripts": "^5.0.1"
   },
   "author": "Arnout <arnoutvanderriet@hotmail.com>",
   "license": "MIT",
@@ -48,6 +45,7 @@
   },
   "devDependencies": {
     "css-loader": "^7.1.2",
-    "style-loader": "^4.0.0"
+    "style-loader": "^4.0.0",
+    "yarn-deduplicate": "^6.0.2"
   }
 }

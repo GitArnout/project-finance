@@ -20,6 +20,7 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import './App.css';
+import axios from 'axios';
 
 const Home = () => {
   const [chartData, setChartData] = useState(null);
@@ -34,6 +35,7 @@ const Home = () => {
   const [uitgavenData, setUitgavenData] = useState([]);
   const [vasteLastenData, setVasteLastenData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [secondPieChartData, setSecondPieChartData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,20 +92,16 @@ const Home = () => {
       // Combine labels and transaction sums
       const combinedData = labelsData.map(mapLabels);
 
-      console.log('Combined Data:', JSON.stringify(combinedData, null, 2));
       setCombinedDataLogged(true);
 
       // Extract UITGAVEN data for the month 2024-10
       const uitgavenCategory = combinedData.find(category => category.name === 'UITGAVEN');
-      console.log('Uitgaven Category:', JSON.stringify(uitgavenCategory));
       if (uitgavenCategory) {
         const uitgavenData = uitgavenCategory.children.map(child => {
           const totalAmount = child.labels.reduce((sum, label) => {
             const monthlySum = label.monthly_sums.find(sum => sum.month === '2024-10');
-            console.log(`Label: ${label.name}, Monthly Sum: ${JSON.stringify(monthlySum)}`);
             return sum + (monthlySum ? monthlySum.amount : 0);
           }, 0);
-          console.log(`Category: ${child.name}, Total Amount: ${totalAmount}`);
           return {
             name: child.name,
             amount: totalAmount
@@ -114,25 +112,49 @@ const Home = () => {
 
       // Check for VASTE LASTEN category within UITGAVEN
       const vasteLastenCategory = uitgavenCategory.children.find(category => category.name === 'VASTE LASTEN');
-      console.log('VASTE LASTEN Category:', JSON.stringify(vasteLastenCategory));
       if (vasteLastenCategory) {
         const vasteLastenData = vasteLastenCategory.children.map(child => {
           const totalAmount = child.labels.reduce((sum, label) => {
             const monthlySum = label.monthly_sums.find(sum => sum.month === '2024-10');
-            console.log(`Label: ${label.name}, Monthly Sum: ${JSON.stringify(monthlySum)}`);
             return sum + (monthlySum ? monthlySum.amount : 0);
           }, 0);
-          console.log(`Category: ${child.name}, Total Amount: ${totalAmount}`);
           return {
             name: child.name,
             amount: totalAmount
           };
         });
-        console.log('VASTE LASTEN Data:', JSON.stringify(vasteLastenData));
         setVasteLastenData(vasteLastenData);
       }
     }
   }, [labelsData, transactionSums, combinedDataLogged]);
+
+  useEffect(() => {
+    const fetchSecondPieChartData = async () => {
+      try {
+        const response = await axios.get('/api/fetch-transactions-overview');
+        const data = response.data;
+
+        // Find the UITGAVEN category
+        const uitgavenCategory = data.find(category => category.name === 'UITGAVEN');
+
+        if (uitgavenCategory) {
+          // Extract the first subcategories and their transactions_total
+          const pieChartData = uitgavenCategory.subcategories.map((subcategory, index) => ({
+            id: index,
+            value: subcategory.transactions_total,
+            label: subcategory.name
+          }));
+
+          setSecondPieChartData(pieChartData);
+          console.log('Second Pie Chart Data:', pieChartData);
+        }
+      } catch (error) {
+        console.error('Error fetching transactions overview:', error);
+      }
+    };
+
+    fetchSecondPieChartData();
+  }, []);
 
   const handleBarClick = (event, params) => {
     if (!params) return;
@@ -202,19 +224,12 @@ const Home = () => {
     label: item.name
   }));
 
-  // Combine pie chart data
-  const combinedPieChartData = [...pieChartData, ...vasteLastenPieChartData];
-
-  // Static data for the second pie chart
-  const secondPieChartData = [
-    { id: 0, value: 10, label: 'series A' },
-    { id: 1, value: 15, label: 'series B' },
-    { id: 2, value: 20, label: 'series C' },
+  const items = [
+    { value: 10, label: 'Series A' },
+    { id: 'id_B', value: 15, label: 'Series B' },
+    { id: 'id_C', value: 20, label: 'Series C' },
   ];
 
-  // Log pieChartData and secondPieChartData to verify their structure and contents
-  console.log('First Pie Chart Data:', combinedPieChartData);
-  console.log('Second Pie Chart Data:', secondPieChartData);
 
   if (loading) {
     return <CircularProgress />;
@@ -306,23 +321,24 @@ const Home = () => {
       )}
 
       <Box sx={{ width: '100%', mt: 4 }}>
-        <Grid container spacing={2} justifyContent="center">
+        <Grid container spacing={2} justifyContent="flex-start">
           <Grid item>
             <PieChart
               series={[
                 {
-                  data: combinedPieChartData,
+                  data: secondPieChartData,
                 },
               ]}
-              width={400}
-              height={400}
+              width={600}
+              height={200}
+              margin={{ right: 220 }}
             />
           </Grid>
           <Grid item>
             <PieChart
               series={[
                 {
-                  data: secondPieChartData,
+                  data: items,
                 },
               ]}
               width={400}

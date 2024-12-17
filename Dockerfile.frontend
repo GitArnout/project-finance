@@ -3,16 +3,20 @@ FROM node:18.12.0 as build
 
 WORKDIR /app
 
+# Create a yarn cache folder
+RUN mkdir -p /root/.yarn
+
 # Copy package.json and yarn.lock into the container
 COPY frontend/package.json frontend/yarn.lock ./
 
-# Install dependencies
-RUN yarn install
+# Install dependencies (without --offline to populate the cache)
+RUN yarn install --frozen-lockfile --cache-folder /root/.yarn
 
-# Copy the rest of the frontend code
+# Now, copy the rest of the frontend code
 COPY frontend/ .
 
-# Build the app
+# Build the app (with --offline mode enabled for subsequent runs)
+RUN yarn install --frozen-lockfile --offline --cache-folder /root/.yarn
 RUN yarn build
 
 # Stage 2: Serve the app with Nginx
